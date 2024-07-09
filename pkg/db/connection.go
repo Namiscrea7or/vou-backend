@@ -24,21 +24,14 @@ func GetDB() *mongo.Database {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
 	defer cancel()
 
-	mongoAddress := os.Getenv("MONGO_ADDRESS")
 	mongoDatabase := os.Getenv("MONGO_DATABASE_NAME")
-	mongoUser := os.Getenv("MONGO_USER")
-	mongoPassword := os.Getenv("MONGO_PASSWORD")
-	connectionURI := fmt.Sprintf(
-		"mongodb://%s:%s@%s:27017/%s",
-		mongoUser,
-		mongoPassword,
-		mongoAddress,
-		mongoDatabase,
-	)
+	connectionURI := os.Getenv("MONGO_URI")
 
 	client, err := mongo.Connect(ctx, options.Client().ApplyURI(connectionURI))
 	if err != nil {
 		log.Fatal(err)
+	} else {
+		fmt.Println("connect to db successfully")
 	}
 
 	db = client.Database(mongoDatabase)
