@@ -11,7 +11,10 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-var db *mongo.Database
+var (
+	db             *mongo.Database
+	UserCollection = "users"
+)
 
 func GetDB() *mongo.Database {
 	if db != nil {
@@ -41,4 +44,8 @@ func GetDB() *mongo.Database {
 	db = client.Database(mongoDatabase)
 
 	return db
+}
+
+func GetUsersCollection() *mongo.Collection {
+	return GetDB().Collection(UserCollection)
 }
