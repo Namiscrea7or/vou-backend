@@ -10,6 +10,7 @@ import (
 
 var upgrader = websocket.Upgrader{
 	CheckOrigin: func(r *http.Request) bool {
+		// For development purpose, we allow all connections
 		return true
 	},
 }
