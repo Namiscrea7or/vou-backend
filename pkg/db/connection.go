@@ -12,8 +12,10 @@ import (
 )
 
 var (
-	db             *mongo.Database
-	UserCollection = "users"
+	db                *mongo.Database
+	UserCollection    = "users"
+	VoucherCollection = "vouchers"
+	PackageCollection = "packages"
 )
 
 func GetDB() *mongo.Database {
@@ -41,4 +43,12 @@ func GetDB() *mongo.Database {
 
 func GetUsersCollection() *mongo.Collection {
 	return GetDB().Collection(UserCollection)
+}
+
+func GetVoucherCollection() *mongo.Collection {
+	return GetDB().Collection(VoucherCollection)
+}
+
+func GetPackageCollection() *mongo.Collection {
+	return GetDB().Collection(PackageCollection)
 }
