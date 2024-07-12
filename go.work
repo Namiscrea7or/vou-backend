@@ -5,6 +5,7 @@ use (
 	./pkg/db
 	./pkg/dummy
 	./pkg/utils
+	./pkg/ws
 	./services/core
 	./services/realtime
 )
