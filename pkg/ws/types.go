@@ -1,6 +1,10 @@
 package ws
 
-import "github.com/gorilla/websocket"
+import (
+	"context"
+
+	"github.com/gorilla/websocket"
+)
 
 const (
 	TextType   int = 1
@@ -12,6 +16,18 @@ type Server struct {
 }
 
 type EventHandler struct {
-	OnMessage    func(conn *websocket.Conn, msgType int, msg []byte)
-	OnDisconnect func(conn *websocket.Conn)
+	OnMessage    func(ctx context.Context, msgType int, msg []byte)
+	OnDisconnect func(ctx context.Context)
 }
+
+type Message struct {
+	Event   string      `json:"event"`
+	Payload interface{} `json:"payload"`
+}
+
+type ContextKey int
+
+const (
+	AuthKey ContextKey = iota
+	ConnKey
+)

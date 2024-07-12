@@ -1,13 +1,13 @@
 package main
 
 import (
+	"context"
+	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
 
 	"vou/pkg/ws"
-
-	"github.com/gorilla/websocket"
 )
 
 func main() {
@@ -16,11 +16,23 @@ func main() {
 	server := ws.NewServer()
 
 	handler := ws.EventHandler{
-		OnMessage: func(conn *websocket.Conn, msgType int, msg []byte) {
-			server.Broadcast(msgType, []byte(fmt.Sprintf("%s: %s", conn.RemoteAddr().String(), msg)))
+		OnMessage: func(ctx context.Context, msgType int, msg []byte) {
+			if msgType == ws.BinaryType {
+				return
+			}
+
+			var parsedMessage ws.Message
+			err := json.Unmarshal(msg, &parsedMessage)
+			if err != nil {
+				log.Println("--> failed to parse message", err)
+				return
+			}
+
+			log.Println("--> parsed message", parsedMessage)
 		},
-		OnDisconnect: func(conn *websocket.Conn) {
-			server.Broadcast(ws.TextType, []byte(fmt.Sprintf("%s disconnected", conn.RemoteAddr().String())))
+		OnDisconnect: func(ctx context.Context) {
+			idToken := ctx.Value(ws.AuthKey)
+			server.Broadcast(ws.TextType, []byte(fmt.Sprintf("%s disconnected", idToken)))
 		},
 	}
 

@@ -1,9 +1,10 @@
 package ws
 
 import (
-	"fmt"
+	"context"
 	"log"
 	"net/http"
+	"strings"
 
 	"github.com/gorilla/websocket"
 )
@@ -30,19 +31,29 @@ func (s *Server) CreateHandler(handler EventHandler) func(w http.ResponseWriter,
 		}
 		defer conn.Close()
 
+		idToken := ""
+		authKey := r.Header.Get("Authorization")
+		if strings.HasPrefix(authKey, "Bearer ") {
+			idToken = strings.Replace(authKey, "Bearer ", "", 1)
+		}
+
+		ctx := context.Background()
+		ctx = context.WithValue(ctx, AuthKey, idToken)
+		ctx = context.WithValue(ctx, ConnKey, conn)
+
 		s.conns[conn] = true
-		s.Broadcast(TextType, []byte(fmt.Sprintf("%s connected", conn.RemoteAddr().String())))
+		log.Printf("%s connected: %s", conn.RemoteAddr().String(), idToken)
 
 		for {
 			msgType, msg, err := conn.ReadMessage()
 			if err != nil {
 				delete(s.conns, conn)
 				log.Printf("failed to read msg from %s: %s\n", conn.RemoteAddr(), err)
-				go handler.OnDisconnect(conn)
+				go handler.OnDisconnect(ctx)
 				break
 			}
 
-			go handler.OnMessage(conn, msgType, msg)
+			go handler.OnMessage(ctx, msgType, msg)
 		}
 	}
 }
