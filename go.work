@@ -1,10 +1,10 @@
-go 1.22.3
+go 1.20
 
 use (
-	.
 	./pkg/auth
 	./pkg/db
 	./pkg/dummy
 	./pkg/utils
 	./services/core
+	./services/realtime
 )
