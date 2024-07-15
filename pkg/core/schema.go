@@ -1,6 +1,8 @@
+// core/schema.go
 package core
 
 import (
+	"vou/pkg/core/exchange"
 	packages "vou/pkg/core/package"
 	"vou/pkg/core/users"
 	"vou/pkg/core/voucher"
@@ -21,6 +23,9 @@ func InitSchema() graphql.Schema {
 		packagesResolver = packages.NewPackagesResolver()
 		packagesQuery    = packages.InitPackageQuery(packagesResolver)
 		packagesMutation = packages.InitPackageMutation(packagesResolver)
+
+		exchangesResolver = exchange.NewExchangesResolver()
+		exchangesMutation = exchange.InitExchangesMutation(exchangesResolver)
 	)
 
 	rootQuery := graphql.NewObject(graphql.ObjectConfig{
@@ -28,7 +33,7 @@ func InitSchema() graphql.Schema {
 		Fields: graphql.Fields{
 			"user":          usersQuery.User,
 			"voucherById":   vouchersQuery.Voucher,
-			"voucherbyCode": vouchersQuery.VoucherByCode,
+			"voucherByCode": vouchersQuery.VoucherByCode,
 			"package":       packagesQuery.Package,
 		},
 	})
@@ -43,6 +48,9 @@ func InitSchema() graphql.Schema {
 			"removeVoucherFromPackageById":   packagesMutation.RemoveVoucherFromPackageById,
 			"addVoucherToPackageByCode":      packagesMutation.AddVoucherToPackageByCode,
 			"removeVoucherFromPackageByCode": packagesMutation.RemoveVoucherFromPackageByCode,
+			"createExchangeRequest":          exchangesMutation.CreateExchangeRequest,
+			"addVoucherToExchange":           exchangesMutation.AddVoucherToExchange,
+			"finalizeExchange":               exchangesMutation.FinalizeExchange,
 		},
 	})
 

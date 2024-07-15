@@ -18,10 +18,10 @@ func InitPackageMutation(r *PackagesResolver) *PackagesMutation {
 			Type:        graphql.Boolean,
 			Description: "Create a new package",
 			Args: graphql.FieldConfigArgument{
-				"user_id": &graphql.ArgumentConfig{
+				"userId": &graphql.ArgumentConfig{
 					Type: graphql.NewNonNull(graphql.String),
 				},
-				"allow_exchange": &graphql.ArgumentConfig{
+				"allowExchange": &graphql.ArgumentConfig{
 					Type: graphql.NewNonNull(graphql.Boolean),
 				},
 			},

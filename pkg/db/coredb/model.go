@@ -31,3 +31,13 @@ type Package struct {
 	Vouchers      []string           `json:"vouchers" bson:"vouchers"`
 	AllowExchange bool               `json:"allow_exchange" bson:"allow_exchange"`
 }
+
+type Exchange struct {
+	ID                primitive.ObjectID `json:"id" bson:"_id"`
+	FirstUserID       string             `json:"first_user_id" bson:"first_user_id"`
+	FirstVoucherCode  string             `json:"first_voucher_code" bson:"first_voucher_code"`
+	SecondUserID      string             `json:"second_user_id" bson:"second_user_id"`
+	SecondVoucherCode string             `json:"second_voucher_code" bson:"second_voucher_code"`
+	CreatedAt         time.Time          `json:"created_at" bson:"created_at"`
+	Completed         bool               `json:"completed" bson:"completed"`
+}

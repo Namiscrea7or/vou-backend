@@ -10,7 +10,7 @@ var packageType = graphql.NewObject(graphql.ObjectConfig{
 		"id": &graphql.Field{
 			Type: graphql.ID,
 		},
-		"user_id": &graphql.Field{
+		"userId": &graphql.Field{
 			Type: graphql.String,
 		},
 		"vouchers": &graphql.Field{

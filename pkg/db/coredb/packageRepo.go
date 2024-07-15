@@ -21,7 +21,7 @@ func NewPackagesRepo() *PackagesRepo {
 	packagesCollection := db.GetPackageCollection()
 	_, err := packagesCollection.Indexes().CreateMany(context.TODO(), []mongo.IndexModel{
 		{
-			Keys:    bson.D{{Key: "user_id", Value: 1}},
+			Keys:    bson.D{{Key: "userId", Value: 1}},
 			Options: options.Index().SetUnique(false),
 		},
 	})
@@ -55,7 +55,7 @@ func (r *PackagesRepo) GetPackagesByUserID(userID string) ([]Package, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	cursor, err := r.Find(ctx, bson.M{"user_id": userID})
+	cursor, err := r.Find(ctx, bson.M{"userId": userID})
 	if err != nil {
 		return nil, err
 	}

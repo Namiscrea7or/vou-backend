@@ -26,7 +26,7 @@ func NewPackagesResolver() *PackagesResolver {
 func (r *PackagesResolver) CreatePackage(params graphql.ResolveParams) (interface{}, error) {
 	pkg := coredb.Package{
 		ID:            primitive.NewObjectID(),
-		UserID:        params.Args["user_id"].(string),
+		UserID:        params.Args["userId"].(string),
 		Vouchers:      []string{},
 		AllowExchange: params.Args["allow_exchange"].(bool),
 	}
