@@ -26,20 +26,23 @@ func InitSchema() graphql.Schema {
 	rootQuery := graphql.NewObject(graphql.ObjectConfig{
 		Name: "RootQuery",
 		Fields: graphql.Fields{
-			"user":    usersQuery.User,
-			"voucher": vouchersQuery.Voucher,
-			"package": packagesQuery.Package,
+			"user":          usersQuery.User,
+			"voucherById":   vouchersQuery.Voucher,
+			"voucherbyCode": vouchersQuery.VoucherByCode,
+			"package":       packagesQuery.Package,
 		},
 	})
 
 	rootMutation := graphql.NewObject(graphql.ObjectConfig{
 		Name: "RootMutation",
 		Fields: graphql.Fields{
-			"registerAccount":          usersMutation.RegisterAccount,
-			"createVoucher":            vouchersMutation.CreateVoucher,
-			"createPackage":            packagesMutation.CreatePackage,
-			"addVoucherToPackage":      packagesMutation.AddVoucherToPackage,
-			"removeVoucherFromPackage": packagesMutation.RemoveVoucherFromPackage,
+			"registerAccount":                usersMutation.RegisterAccount,
+			"createVoucher":                  vouchersMutation.CreateVoucher,
+			"createPackage":                  packagesMutation.CreatePackage,
+			"addVoucherToPackageById":        packagesMutation.AddVoucherToPackageById,
+			"removeVoucherFromPackageById":   packagesMutation.RemoveVoucherFromPackageById,
+			"addVoucherToPackageByCode":      packagesMutation.AddVoucherToPackageByCode,
+			"removeVoucherFromPackageByCode": packagesMutation.RemoveVoucherFromPackageByCode,
 		},
 	})
 

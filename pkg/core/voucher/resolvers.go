@@ -68,3 +68,22 @@ func (r *VouchersResolver) GetVoucherByID(params graphql.ResolveParams) (interfa
 
 	return voucher, nil
 }
+
+func (r *VouchersResolver) GetVoucherByCode(params graphql.ResolveParams) (interface{}, error) {
+	code, ok := params.Args["code"].(string)
+	if !ok {
+		return nil, nil
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	var voucher coredb.Voucher
+	err := db.GetVoucherCollection().FindOne(ctx, bson.M{"code": code}).Decode(&voucher)
+	if err != nil {
+		log.Printf("failed to find voucher: %v\n", err)
+		return nil, err
+	}
+
+	return voucher, nil
+}

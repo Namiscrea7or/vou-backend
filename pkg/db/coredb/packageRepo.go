@@ -72,7 +72,7 @@ func (r *PackagesRepo) GetPackagesByUserID(userID string) ([]Package, error) {
 	return packages, cursor.Err()
 }
 
-func (r *PackagesRepo) AddVoucherToPackage(pkgID primitive.ObjectID, voucherID string) error {
+func (r *PackagesRepo) AddVoucherToPackageById(pkgID primitive.ObjectID, voucherID string) error {
 	filter := bson.M{"_id": pkgID}
 	update := bson.M{
 		"$addToSet": bson.M{"vouchers": voucherID},
@@ -85,7 +85,7 @@ func (r *PackagesRepo) AddVoucherToPackage(pkgID primitive.ObjectID, voucherID s
 	return err
 }
 
-func (r *PackagesRepo) RemoveVoucherFromPackage(pkgID primitive.ObjectID, voucherID string) error {
+func (r *PackagesRepo) RemoveVoucherFromPackageById(pkgID primitive.ObjectID, voucherID string) error {
 	filter := bson.M{"_id": pkgID}
 	update := bson.M{
 		"$pull": bson.M{"vouchers": voucherID},
@@ -96,4 +96,32 @@ func (r *PackagesRepo) RemoveVoucherFromPackage(pkgID primitive.ObjectID, vouche
 
 	_, err := r.UpdateOne(ctx, filter, update)
 	return err
+}
+
+func (r *PackagesRepo) AddVoucherToPackageByCode(packageID primitive.ObjectID, voucherCode string) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	var voucher Voucher
+	err := db.GetVoucherCollection().FindOne(ctx, bson.M{"code": voucherCode}).Decode(&voucher)
+	if err != nil {
+		log.Printf("Failed to find voucher by code: %v\n", err)
+		return err
+	}
+
+	return r.AddVoucherToPackageById(packageID, voucher.ID.Hex())
+}
+
+func (r *PackagesRepo) RemoveVoucherFromPackageByCode(packageID primitive.ObjectID, voucherCode string) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	var voucher Voucher
+	err := db.GetVoucherCollection().FindOne(ctx, bson.M{"code": voucherCode}).Decode(&voucher)
+	if err != nil {
+		log.Printf("Failed to find voucher by code: %v\n", err)
+		return err
+	}
+
+	return r.RemoveVoucherFromPackageById(packageID, voucher.ID.Hex())
 }

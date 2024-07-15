@@ -69,7 +69,7 @@ func (r *PackagesResolver) GetPackageByID(params graphql.ResolveParams) (interfa
 	return pkg, nil
 }
 
-func (r *PackagesResolver) AddVoucherToPackage(params graphql.ResolveParams) (interface{}, error) {
+func (r *PackagesResolver) AddVoucherToPackageById(params graphql.ResolveParams) (interface{}, error) {
 	packageID, _ := params.Args["packageID"].(string)
 	voucherID, _ := params.Args["voucherID"].(string)
 
@@ -99,7 +99,7 @@ func (r *PackagesResolver) AddVoucherToPackage(params graphql.ResolveParams) (in
 	return true, nil
 }
 
-func (r *PackagesResolver) RemoveVoucherFromPackage(params graphql.ResolveParams) (interface{}, error) {
+func (r *PackagesResolver) RemoveVoucherFromPackageById(params graphql.ResolveParams) (interface{}, error) {
 	packageID, _ := params.Args["packageID"].(string)
 	voucherID, _ := params.Args["voucherID"].(string)
 
@@ -119,6 +119,68 @@ func (r *PackagesResolver) RemoveVoucherFromPackage(params graphql.ResolveParams
 	filter := bson.M{"_id": pkgID}
 	update := bson.M{
 		"$pull": bson.M{"vouchers": vchrID},
+	}
+
+	_, err = r.PackagesRepo.Collection.UpdateOne(ctx, filter, update)
+	if err != nil {
+		return false, err
+	}
+
+	return true, nil
+}
+
+func (r *PackagesResolver) AddVoucherToPackageByCode(params graphql.ResolveParams) (interface{}, error) {
+	packageID, _ := params.Args["packageID"].(string)
+	voucherCode, _ := params.Args["voucherCode"].(string)
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	pkgID, err := primitive.ObjectIDFromHex(packageID)
+	if err != nil {
+		return false, err
+	}
+
+	var voucher coredb.Voucher
+	err = db.GetVoucherCollection().FindOne(ctx, bson.M{"code": voucherCode}).Decode(&voucher)
+	if err != nil {
+		return false, err
+	}
+
+	filter := bson.M{"_id": pkgID}
+	update := bson.M{
+		"$addToSet": bson.M{"vouchers": voucher.ID.Hex()},
+	}
+
+	_, err = r.PackagesRepo.Collection.UpdateOne(ctx, filter, update)
+	if err != nil {
+		return false, err
+	}
+
+	return true, nil
+}
+
+func (r *PackagesResolver) RemoveVoucherFromPackageByCode(params graphql.ResolveParams) (interface{}, error) {
+	packageID, _ := params.Args["packageID"].(string)
+	voucherCode, _ := params.Args["voucherCode"].(string)
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	pkgID, err := primitive.ObjectIDFromHex(packageID)
+	if err != nil {
+		return false, err
+	}
+
+	var voucher coredb.Voucher
+	err = db.GetVoucherCollection().FindOne(ctx, bson.M{"code": voucherCode}).Decode(&voucher)
+	if err != nil {
+		return false, err
+	}
+
+	filter := bson.M{"_id": pkgID}
+	update := bson.M{
+		"$pull": bson.M{"vouchers": voucher.ID.Hex()},
 	}
 
 	_, err = r.PackagesRepo.Collection.UpdateOne(ctx, filter, update)
