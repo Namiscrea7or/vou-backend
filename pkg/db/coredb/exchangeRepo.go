@@ -13,16 +13,6 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-type Exchanges struct {
-	ID                primitive.ObjectID `bson:"_id,omitempty"`
-	FirstUserID       string             `bson:"firstUserId"`
-	FirstVoucherCode  string             `bson:"firstVoucherCode"`
-	SecondUserID      string             `bson:"secondUserId"`
-	SecondVoucherCode string             `bson:"secondVoucherCode"`
-	CreatedAt         time.Time          `bson:"createdAt"`
-	Completed         bool               `bson:"completed"`
-}
-
 type ExchangesRepo struct {
 	*mongo.Collection
 }

@@ -41,3 +41,18 @@ type Exchange struct {
 	CreatedAt         time.Time          `json:"created_at" bson:"created_at"`
 	Completed         bool               `json:"completed" bson:"completed"`
 }
+
+type Gps struct {
+	Latitude  float64 `json:"latitude" bson:"latitude"`
+	Longitude float64 `json:"longitude" bson:"longitude"`
+}
+
+type Brand struct {
+	ID        primitive.ObjectID `json:"id" bson:"_id"`
+	Name      string             `json:"name" bson:"name"`
+	Industry  string             `json:"industry" bson:"industry"`
+	Address   string             `json:"address" bson:"address"`
+	Location  Gps                `json:"location" bson:"location"`
+	Status    bool               `json:"status" bson:"status"`
+	CreatorId string             `json:"creator_id" bson:"creator_id"`
+}

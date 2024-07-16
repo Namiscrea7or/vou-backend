@@ -7,7 +7,7 @@ import (
 var exchangeType = graphql.NewObject(graphql.ObjectConfig{
 	Name: "Exchange",
 	Fields: graphql.Fields{
-		"id":                &graphql.Field{Type: graphql.String},
+		"id":                &graphql.Field{Type: graphql.ID},
 		"firstUserId":       &graphql.Field{Type: graphql.String},
 		"firstVoucherCode":  &graphql.Field{Type: graphql.String},
 		"secondUserId":      &graphql.Field{Type: graphql.String},

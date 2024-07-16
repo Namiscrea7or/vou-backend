@@ -2,6 +2,7 @@
 package core
 
 import (
+	"vou/pkg/core/brand"
 	"vou/pkg/core/exchange"
 	packages "vou/pkg/core/package"
 	"vou/pkg/core/users"
@@ -26,6 +27,10 @@ func InitSchema() graphql.Schema {
 
 		exchangesResolver = exchange.NewExchangesResolver()
 		exchangesMutation = exchange.InitExchangesMutation(exchangesResolver)
+
+		brandResolver = brand.NewBrandResolver()
+		brandQuery    = brand.InitBrandQuery(brandResolver)
+		brandMutation = brand.InitBrandsMutation(brandResolver)
 	)
 
 	rootQuery := graphql.NewObject(graphql.ObjectConfig{
@@ -35,6 +40,8 @@ func InitSchema() graphql.Schema {
 			"voucherById":   vouchersQuery.Voucher,
 			"voucherByCode": vouchersQuery.VoucherByCode,
 			"package":       packagesQuery.Package,
+			"brandById":     brandQuery.BrandRequest,
+			"getAllBrand":   brandQuery.AllBrandRequest,
 		},
 	})
 
@@ -51,6 +58,7 @@ func InitSchema() graphql.Schema {
 			"createExchangeRequest":          exchangesMutation.CreateExchangeRequest,
 			"addVoucherToExchange":           exchangesMutation.AddVoucherToExchange,
 			"finalizeExchange":               exchangesMutation.FinalizeExchange,
+			"createBrand":                    brandMutation.CreateBrand,
 		},
 	})
 

@@ -17,6 +17,7 @@ var (
 	VoucherCollection  = "vouchers"
 	PackageCollection  = "packages"
 	ExchangeCollection = "exchanges"
+	BrandCollection    = "brands"
 )
 
 func GetDB() *mongo.Database {
@@ -56,4 +57,8 @@ func GetPackageCollection() *mongo.Collection {
 
 func GetExchangeCollection() *mongo.Collection {
 	return GetDB().Collection(ExchangeCollection)
+}
+
+func GetBrandCollection() *mongo.Collection {
+	return GetDB().Collection(BrandCollection)
 }
