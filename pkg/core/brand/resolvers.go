@@ -21,7 +21,6 @@ func NewBrandResolver() *BrandResolver {
 }
 
 func (r *BrandResolver) CreateBrand(params graphql.ResolveParams) (interface{}, error) {
-	fmt.Println("go hereee")
 	name, ok := params.Args["name"].(string)
 	if !ok {
 		fmt.Errorf("Don't find name")
@@ -70,7 +69,6 @@ func (r *BrandResolver) CreateBrand(params graphql.ResolveParams) (interface{}, 
 		CreatorId: creatorId,
 	}
 
-	fmt.Println(">>>>>>>>>", brand)
 	_, err := r.BrandRepo.CreateBrand(brand)
 	if err != nil {
 		log.Printf("failed to create brand: %v\n", err)

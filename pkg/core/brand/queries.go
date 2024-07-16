@@ -12,7 +12,7 @@ type BranchQuery struct {
 func InitBrandQuery(r *BrandResolver) *BranchQuery {
 	return &BranchQuery{
 		BrandRequest: &graphql.Field{
-			Type:        graphql.NewList(brandType),
+			Type:        brandType,
 			Description: "Get branch requests by id",
 			Args: graphql.FieldConfigArgument{
 				"id": &graphql.ArgumentConfig{

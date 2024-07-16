@@ -23,10 +23,10 @@ func InitBrandsMutation(r *BrandResolver) *BrandMutation {
 				"address": &graphql.ArgumentConfig{
 					Type: graphql.NewNonNull(graphql.String),
 				},
-				"latiude": &graphql.ArgumentConfig{
+				"latitude": &graphql.ArgumentConfig{
 					Type: graphql.NewNonNull(graphql.Float),
 				},
-				"longiude": &graphql.ArgumentConfig{
+				"longitude": &graphql.ArgumentConfig{
 					Type: graphql.NewNonNull(graphql.Float),
 				},
 				"status": &graphql.ArgumentConfig{
