@@ -1,6 +1,6 @@
 module vou/pkg/auth
 
-go 1.22.3
+go 1.20
 
 require (
 	firebase.google.com/go v3.13.0+incompatible
