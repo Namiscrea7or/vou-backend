@@ -1,14 +1,10 @@
 package quiz
 
 import (
-	"context"
-
 	"github.com/google/uuid"
 )
 
-func HandleGameAction(ctx context.Context) (any, error) {
-	return nil, nil
-}
+
 
 func CreateGameSession(config GameSessionConfig) (*GameSession, error) {
 	err := isConfigValid(config)

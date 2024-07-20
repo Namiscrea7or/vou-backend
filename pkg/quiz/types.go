@@ -17,10 +17,10 @@ type GameSession struct {
 }
 
 type Stage struct {
-	Question    string
-	Options     []string
-	AnswerIndex int
-	Points      int
+	Question    string   `json:"question"`
+	Options     []string `json:"options"`
+	AnswerIndex int      `json:"answerIndex"`
+	Points      int      `json:"points"`
 }
 
 type GameStatus string
@@ -33,9 +33,40 @@ const (
 )
 
 type GameSessionConfig struct {
-	BrandID       string
-	MaxPlayers    int
-	Stages        []Stage
+	BrandID       string  `json:"brandId"`
+	MaxPlayers    int     `json:"maxPlayers"`
+	Stages        []Stage `json:"stages"`
+	CurrentStage  int
+	StagePeriod   int
 	OpenQueueTime time.Time
 	StartTime     time.Time
+}
+
+type Permission string
+
+const (
+	PermissionManageGameSession Permission = "manage-game-session"
+	PermissionPlayGame          Permission = "play-game"
+)
+
+type Event string
+
+const (
+	EventCreateGameSession       Event = "create-game-session"
+	EventUpdateGameSessionConfig Event = "update-game-session-config"
+	EventJoinGameQueue           Event = "join-game-queue"
+	EventLeaveGameQueue          Event = "leave-game-queue"
+)
+
+type Status string
+
+const (
+	Success Status = "success"
+	Failure Status = "failure"
+)
+
+type Response struct {
+	Type    Status `json:"type"`
+	Event   Event  `json:"event"`
+	Payload any    `json:"payload"`
 }

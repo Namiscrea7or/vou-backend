@@ -20,6 +20,8 @@ type EventHandler struct {
 	OnDisconnect func(ctx context.Context)
 }
 
+type MessageType string
+
 type Message struct {
 	Event   string      `json:"event"`
 	Payload interface{} `json:"payload"`

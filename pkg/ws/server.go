@@ -67,3 +67,12 @@ func (s *Server) Broadcast(msgType int, msg []byte) {
 		}
 	}
 }
+
+func (s *Server) Respond(conn *websocket.Conn, msgType int, msg []byte) error {
+	err := conn.WriteMessage(msgType, msg)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}

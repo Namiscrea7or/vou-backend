@@ -7,6 +7,7 @@ import (
 	"log"
 	"net/http"
 
+	"vou/pkg/quiz"
 	"vou/pkg/ws"
 )
 
@@ -28,7 +29,25 @@ func main() {
 				return
 			}
 
-			log.Println("--> parsed message", parsedMessage)
+			response, err := quiz.HandleGameEvent(ctx, parsedMessage)
+			if err != nil {
+				response = &quiz.Response{
+					Type:    quiz.Failure,
+					Event:   quiz.Event(parsedMessage.Event),
+					Payload: err,
+				}
+			}
+
+			byteResponse, err := json.Marshal(response)
+			if err != nil {
+				log.Println("--> failed to marshal response", response, err)
+				return
+			}
+
+			// NOTE: instead of broadcast to all clients, we should implement
+			// observer pattern based on what clients care for
+			// e.g. A game session's events should only be sent to clients who are in that game
+			server.Broadcast(ws.TextType, byteResponse)
 		},
 		OnDisconnect: func(ctx context.Context) {
 			idToken := ctx.Value(ws.AuthKey)
