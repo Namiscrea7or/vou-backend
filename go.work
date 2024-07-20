@@ -4,8 +4,9 @@ use (
 	./pkg/auth
 	./pkg/db
 	./pkg/dummy
+	./pkg/quiz
 	./pkg/utils
 	./pkg/ws
 	./services/core
-	./services/realtime
+	./services/quiz
 )
