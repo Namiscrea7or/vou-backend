@@ -22,23 +22,32 @@ type Voucher struct {
 	ImageURL    string             `json:"imageURL" bson:"image_url"`
 	Value       float64            `json:"value" bson:"value"`
 	Description string             `json:"description" bson:"description"`
-	ExpiredDate time.Time          `json:"expired_date" bson:"expired_date"`
+	ExpiredDate time.Time          `json:"expiredDate" bson:"expired_date"`
+}
+
+type Reward struct {
+	ID          primitive.ObjectID `json:"id" bson:"_id,omitempty"`
+	Name        string             `json:"name" bson:"name"`
+	Description string             `json:"description" bson:"description"`
+	Type        string             `json:"type" bson:"type"`
+	Value       string             `json:"value" bson:"value"`
 }
 
 type Package struct {
 	ID            primitive.ObjectID `json:"id" bson:"_id"`
-	UserID        string             `json:"user_id" bson:"user_id"`
+	UserID        string             `json:"userId" bson:"user_id"`
 	Vouchers      []string           `json:"vouchers" bson:"vouchers"`
-	AllowExchange bool               `json:"allow_exchange" bson:"allow_exchange"`
+	Rewards       []string           `json:"rewards" bson:"rewards"`
+	AllowExchange bool               `json:"allowExchange" bson:"allow_exchange"`
 }
 
 type Exchange struct {
 	ID                primitive.ObjectID `json:"id" bson:"_id"`
-	FirstUserID       string             `json:"first_user_id" bson:"first_user_id"`
-	FirstVoucherCode  string             `json:"first_voucher_code" bson:"first_voucher_code"`
-	SecondUserID      string             `json:"second_user_id" bson:"second_user_id"`
-	SecondVoucherCode string             `json:"second_voucher_code" bson:"second_voucher_code"`
-	CreatedAt         time.Time          `json:"created_at" bson:"created_at"`
+	FirstUserID       string             `json:"firstUserId" bson:"first_user_id"`
+	FirstVoucherCode  string             `json:"firstVoucherCode" bson:"first_voucher_code"`
+	SecondUserID      string             `json:"secondUserId" bson:"second_user_id"`
+	SecondVoucherCode string             `json:"secondVoucherCode" bson:"second_voucher_code"`
+	CreatedAt         time.Time          `json:"createdAt" bson:"created_at"`
 	Completed         bool               `json:"completed" bson:"completed"`
 }
 
@@ -54,5 +63,24 @@ type Brand struct {
 	Address   string             `json:"address" bson:"address"`
 	Location  Gps                `json:"location" bson:"location"`
 	Status    bool               `json:"status" bson:"status"`
-	CreatorId string             `json:"creator_id" bson:"creator_id"`
+	CreatorId string             `json:"creatorId" bson:"creator_id"`
+}
+
+type GameSession struct {
+	ID        primitive.ObjectID `json:"id" bson:"_id,omitempty"`
+	StartTime time.Time          `json:"startTime" bson:"start_time"`
+	EndTime   time.Time          `json:"endTime,omitempty" bson:"end_time,omitempty"`
+	Status    bool               `json:"status" bson:"status"`
+	Rewards   []string           `json:"rewards" bson:"rewards"`
+}
+
+type UserGameState struct {
+	ID            primitive.ObjectID `json:"id" bson:"_id,omitempty"`
+	UserID        primitive.ObjectID `json:"userId" bson:"user_id"`
+	ClaimedReward []ClaimedReward    `json:"claimedRewards" bson:"claimed_rewards"`
+}
+
+type ClaimedReward struct {
+	ClaimedDate time.Time `json:"claimedDate" bson:"claimed_date"`
+	RewardId    string    `json:"rewardId" bson:"reward_id"`
 }

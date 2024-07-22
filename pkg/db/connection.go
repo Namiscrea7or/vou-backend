@@ -12,12 +12,15 @@ import (
 )
 
 var (
-	db                 *mongo.Database
-	UserCollection     = "users"
-	VoucherCollection  = "vouchers"
-	PackageCollection  = "packages"
-	ExchangeCollection = "exchanges"
-	BrandCollection    = "brands"
+	db                      *mongo.Database
+	UserCollection          = "users"
+	VoucherCollection       = "vouchers"
+	PackageCollection       = "packages"
+	ExchangeCollection      = "exchanges"
+	BrandCollection         = "brands"
+	RewardsCollection       = "rewards"
+	GameSessionCollection   = "game_sessions"
+	UserGameStateCollection = "user_game_states"
 )
 
 func GetDB() *mongo.Database {
@@ -61,4 +64,16 @@ func GetExchangeCollection() *mongo.Collection {
 
 func GetBrandCollection() *mongo.Collection {
 	return GetDB().Collection(BrandCollection)
+}
+
+func GetRewardsCollection() *mongo.Collection {
+	return GetDB().Collection(RewardsCollection)
+}
+
+func GetGameSessionsCollection() *mongo.Collection {
+	return GetDB().Collection(GameSessionCollection)
+}
+
+func GetUserGameStatesCollection() *mongo.Collection {
+	return GetDB().Collection(UserGameStateCollection)
 }
