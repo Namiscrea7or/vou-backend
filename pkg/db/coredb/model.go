@@ -7,13 +7,21 @@ import (
 )
 
 type User struct {
-	ID          primitive.ObjectID `json:"id" bson:"_id"`
-	Name        string             `json:"name" bson:"name"`
-	Email       string             `json:"email" bson:"email"`
-	FirebaseUID string             `json:"firebaseUID" bson:"firebase_uid"`
-	ImageURL    string             `json:"imageURL" bson:"image_url"`
-	CreatedAt   time.Time          `json:"createdAt" bson:"created_at"`
-	UpdatedAt   time.Time          `json:"updatedAt" bson:"updated_at"`
+	ID              primitive.ObjectID `json:"id" bson:"_id"`
+	Name            string             `json:"name" bson:"name"`
+	Username        string             `json:"userName" bson:"user_name"`
+	Password        string             `json:"password" bson:"password"`
+	Email           string             `json:"email" bson:"email"`
+	PhoneNumber     string             `json:"phoneNumber" bson:"phone_number"`
+	Role            string             `json:"role" bson:"role"`
+	Status          bool               `json:"status" bson:"status"`
+	ImageURL        string             `json:"imageURL" bson:"image_url"`
+	DateOfBirth     time.Time          `json:"dob" bson:"dob"`
+	Gender          bool               `json:"gender" bson:"gender"`
+	FacebookAccount string             `json:"facebookAccount" bson:"facebook_account"`
+	FirebaseUID     string             `json:"firebaseUID" bson:"firebase_uid"`
+	CreatedAt       time.Time          `json:"createdAt" bson:"created_at"`
+	UpdatedAt       time.Time          `json:"updatedAt" bson:"updated_at"`
 }
 
 type Voucher struct {

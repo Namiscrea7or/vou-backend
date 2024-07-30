@@ -2,9 +2,11 @@ package exchange
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"time"
 
+	"vou/pkg/auth"
 	"vou/pkg/db"
 	"vou/pkg/db/coredb"
 
@@ -26,6 +28,15 @@ func NewExchangesResolver() *ExchangesResolver {
 }
 
 func (r *ExchangesResolver) CreateExchangeRequest(params graphql.ResolveParams) (interface{}, error) {
+	user, ok := params.Context.Value(auth.UserKey).(coredb.User)
+	if !ok {
+		return nil, fmt.Errorf("user not found")
+	}
+
+	if user.Role != "user" {
+		return nil, fmt.Errorf("Permission denied")
+	}
+
 	firstUserID := params.Args["firstUserId"].(string)
 	firstVoucherCode := params.Args["firstVoucherCode"].(string)
 
@@ -50,6 +61,15 @@ func (r *ExchangesResolver) CreateExchangeRequest(params graphql.ResolveParams) 
 }
 
 func (r *ExchangesResolver) AddVoucherToExchange(params graphql.ResolveParams) (interface{}, error) {
+	user, ok := params.Context.Value(auth.UserKey).(coredb.User)
+	if !ok {
+		return nil, fmt.Errorf("user not found")
+	}
+
+	if user.Role != "user" {
+		return nil, fmt.Errorf("Permission denied")
+	}
+
 	exchangeID := params.Args["exchangeId"].(string)
 	secondUserID := params.Args["secondUserId"].(string)
 	secondVoucherCode := params.Args["secondVoucherCode"].(string)

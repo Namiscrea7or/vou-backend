@@ -2,6 +2,7 @@ package users
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"time"
 
@@ -11,6 +12,7 @@ import (
 
 	"github.com/graphql-go/graphql"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"golang.org/x/crypto/bcrypt"
 )
 
 type UsersResolver struct {
@@ -29,14 +31,70 @@ func (r *UsersResolver) RegisterAccount(params graphql.ResolveParams) (interface
 		return false, err
 	}
 
+	name, ok := params.Args["name"].(string)
+	if !ok {
+		fmt.Errorf("Don't find name")
+	}
+
+	username, ok := params.Args["username"].(string)
+	if !ok {
+		fmt.Errorf("Don't find username")
+	}
+
+	password, ok := params.Args["password"].(string)
+	if !ok {
+		fmt.Errorf("Don't find password")
+	}
+
+	hashed, _ := bcrypt.GenerateFromPassword([]byte(password), 8)
+	password = string(hashed)
+
+	email, ok := params.Args["email"].(string)
+	if !ok {
+		fmt.Errorf("Don't find email")
+	}
+
+	role, ok := params.Args["role"].(string)
+	if !ok {
+		fmt.Errorf("Don't find role")
+	}
+
+	profilePicture, ok := params.Args["profilePicture"].(string)
+	if !ok {
+		profilePicture = ""
+	}
+
+	dob, ok := params.Args["dob"].(time.Time)
+	if !ok {
+		fmt.Errorf("Don't find dob")
+	}
+
+	gender, ok := params.Args["gender"].(bool)
+	if !ok {
+		fmt.Errorf("Don't find gender")
+	}
+
+	facebookAccount, ok := params.Args["facebookAccount"].(string)
+	if !ok {
+		fmt.Errorf("Don't find facebook Account")
+	}
+
 	user := coredb.User{
-		ID:          primitive.NewObjectID(),
-		Name:        authProfile.Name,
-		Email:       authProfile.Email,
-		FirebaseUID: authProfile.UID,
-		ImageURL:    "",
-		CreatedAt:   time.Now(),
-		UpdatedAt:   time.Now(),
+		ID:              primitive.NewObjectID(),
+		Name:            name,
+		Username:        username,
+		Password:        password,
+		Email:           email,
+		PhoneNumber:     authProfile.PhoneNumber,
+		Role:            role,
+		Status:          true,
+		ImageURL:        profilePicture,
+		DateOfBirth:     dob,
+		Gender:          gender,
+		FacebookAccount: facebookAccount,
+		FirebaseUID:     authProfile.UID,
+		CreatedAt:       time.Now(),
+		UpdatedAt:       time.Now(),
 	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)

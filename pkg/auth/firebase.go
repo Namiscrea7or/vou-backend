@@ -29,6 +29,26 @@ func getAuthClient() (*auth.Client, error) {
 	return app.Auth(context.Background())
 }
 
+func VerifyPhoneNumber(idToken string) (*auth.UserRecord, error) {
+	authClient, err := getAuthClient()
+	if err != nil {
+		return nil, err
+	}
+
+	token, err := authClient.VerifyIDToken(context.Background(), idToken)
+	if err != nil {
+		return nil, err
+	}
+
+	uid := token.UID
+	userRecord, err := authClient.GetUser(context.Background(), uid)
+	if err != nil {
+		return nil, fmt.Errorf("error getting user: %v", err)
+	}
+
+	return userRecord, nil
+}
+
 func GetProfileByIDToken(idToken string) (*Profile, error) {
 	authClient, err := getAuthClient()
 	if err != nil {
@@ -40,11 +60,14 @@ func GetProfileByIDToken(idToken string) (*Profile, error) {
 		return nil, err
 	}
 
+	userRecord, err := authClient.GetUser(context.Background(), token.UID)
+	if err != nil {
+		return nil, err
+	}
+
 	authProfile := Profile{
-		UID:           token.UID,
-		Email:         token.Claims["email"].(string),
-		EmailVerified: token.Claims["email_verified"].(bool),
-		Name:          token.Claims["name"].(string),
+		UID:         token.UID,
+		PhoneNumber: userRecord.PhoneNumber,
 	}
 
 	return &authProfile, nil

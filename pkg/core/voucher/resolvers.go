@@ -2,9 +2,11 @@ package voucher
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"time"
 
+	"vou/pkg/auth"
 	"vou/pkg/db"
 	"vou/pkg/db/coredb"
 
@@ -24,6 +26,15 @@ func NewVouchersResolver() *VouchersResolver {
 }
 
 func (r *VouchersResolver) CreateVoucher(params graphql.ResolveParams) (interface{}, error) {
+	user, ok := params.Context.Value(auth.UserKey).(coredb.User)
+	if !ok {
+		return nil, fmt.Errorf("user not found")
+	}
+
+	if user.Role != "brand" {
+		return nil, fmt.Errorf("Permission denied")
+	}
+
 	voucher := coredb.Voucher{
 		ID:          primitive.NewObjectID(),
 		Code:        params.Args["code"].(string),
