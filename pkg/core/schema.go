@@ -4,7 +4,9 @@ package core
 import (
 	"vou/pkg/core/brand"
 	"vou/pkg/core/exchange"
+	"vou/pkg/core/gameSessions"
 	packages "vou/pkg/core/package"
+	"vou/pkg/core/rewards"
 	"vou/pkg/core/users"
 	"vou/pkg/core/voucher"
 
@@ -31,17 +33,27 @@ func InitSchema() graphql.Schema {
 		brandResolver = brand.NewBrandResolver()
 		brandQuery    = brand.InitBrandQuery(brandResolver)
 		brandMutation = brand.InitBrandsMutation(brandResolver)
+
+		gameSessionResolver = gameSessions.NewGameSessionsResolver()
+		gameSessionQuery    = gameSessions.InitGameSessionsQuery(gameSessionResolver)
+		gameSessionMutation = gameSessions.InitGameSessionsMutation(gameSessionResolver)
+
+		rewardResolver = rewards.NewRewardsResolver()
+		rewardQuery    = rewards.InitRewardsQuery(rewardResolver)
+		rewardMutation = rewards.InitRewardsMutation(rewardResolver)
 	)
 
 	rootQuery := graphql.NewObject(graphql.ObjectConfig{
 		Name: "RootQuery",
 		Fields: graphql.Fields{
-			"user":          usersQuery.User,
-			"voucherById":   vouchersQuery.Voucher,
-			"voucherByCode": vouchersQuery.VoucherByCode,
-			"package":       packagesQuery.Package,
-			"brandById":     brandQuery.BrandRequest,
-			"getAllBrand":   brandQuery.AllBrandRequest,
+			"user":               usersQuery.User,
+			"voucherById":        vouchersQuery.Voucher,
+			"voucherByCode":      vouchersQuery.VoucherByCode,
+			"package":            packagesQuery.Package,
+			"brandById":          brandQuery.BrandRequest,
+			"getAllBrand":        brandQuery.AllBrandRequest,
+			"getGameSessionByID": gameSessionQuery.GameSession,
+			"getRewardByID":      rewardQuery.Reward,
 		},
 	})
 
@@ -51,14 +63,18 @@ func InitSchema() graphql.Schema {
 			"registerAccount":                usersMutation.RegisterAccount,
 			"createVoucher":                  vouchersMutation.CreateVoucher,
 			"createPackage":                  packagesMutation.CreatePackage,
-			"addVoucherToPackageById":        packagesMutation.AddVoucherToPackageById,
-			"removeVoucherFromPackageById":   packagesMutation.RemoveVoucherFromPackageById,
+			"addVoucherToPackageById":        packagesMutation.AddRewardToPackageById,
+			"removeVoucherFromPackageById":   packagesMutation.RemoveRewardFromPackageById,
 			"addVoucherToPackageByCode":      packagesMutation.AddVoucherToPackageByCode,
 			"removeVoucherFromPackageByCode": packagesMutation.RemoveVoucherFromPackageByCode,
 			"createExchangeRequest":          exchangesMutation.CreateExchangeRequest,
-			"addVoucherToExchange":           exchangesMutation.AddVoucherToExchange,
+			"addVoucherToExchange":           exchangesMutation.AddRewardToExchange,
 			"finalizeExchange":               exchangesMutation.FinalizeExchange,
 			"createBrand":                    brandMutation.CreateBrand,
+			"createGameSession":              gameSessionMutation.CreateGameSession,
+			"AddRewardToGameSession":         gameSessionMutation.AddRewardToGameSession,
+
+			"createReward": rewardMutation.CreateReward,
 		},
 	})
 

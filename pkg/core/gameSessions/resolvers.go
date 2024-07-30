@@ -9,6 +9,7 @@ import (
 	"vou/pkg/db/coredb"
 
 	"github.com/graphql-go/graphql"
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
@@ -61,4 +62,48 @@ func (r *GameSessionsResolver) GetGameSessionByID(params graphql.ResolveParams) 
 	}
 
 	return gameSession, nil
+}
+
+func (r *GameSessionsResolver) AddRewardToGameSession(params graphql.ResolveParams) (interface{}, error) {
+	ID, _ := params.Args["gameSessionID"].(string)
+	gameId, _ := primitive.ObjectIDFromHex(ID)
+	rewardId, _ := params.Args["rewardID"].(string)
+	rwId, _ := primitive.ObjectIDFromHex(rewardId)
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	pkgID, err := primitive.ObjectIDFromHex(ID)
+	if err != nil {
+		return false, err
+	}
+
+	var reward coredb.Reward
+	err = db.GetRewardsCollection().FindOne(ctx, map[string]primitive.ObjectID{
+		"_id": rwId,
+	}).Decode(&reward)
+	if err != nil {
+		log.Printf("failed to find reward: %v\n", err)
+		return nil, err
+	}
+
+	var gameSession coredb.GameSession
+	err = db.GetRewardsCollection().FindOne(ctx, map[string]primitive.ObjectID{
+		"_id": gameId,
+	}).Decode(&gameSession)
+	if err != nil {
+		return false, err
+	}
+
+	filter := bson.M{"_id": pkgID}
+	update := bson.M{
+		"$addToSet": bson.M{"rewards": rewardId},
+	}
+
+	_, err = r.GameSessionsRepo.Collection.UpdateOne(ctx, filter, update)
+	if err != nil {
+		return false, err
+	}
+
+	return true, nil
 }

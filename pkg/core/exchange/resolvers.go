@@ -60,7 +60,7 @@ func (r *ExchangesResolver) CreateExchangeRequest(params graphql.ResolveParams) 
 	return true, nil
 }
 
-func (r *ExchangesResolver) AddVoucherToExchange(params graphql.ResolveParams) (interface{}, error) {
+func (r *ExchangesResolver) AddRewardToExchange(params graphql.ResolveParams) (interface{}, error) {
 	user, ok := params.Context.Value(auth.UserKey).(coredb.User)
 	if !ok {
 		return nil, fmt.Errorf("user not found")
