@@ -80,7 +80,7 @@ func (r *PackagesResolver) GetPackageByID(params graphql.ResolveParams) (interfa
 	return pkg, nil
 }
 
-func (r *PackagesResolver) AddVoucherToPackageById(params graphql.ResolveParams) (interface{}, error) {
+func (r *PackagesResolver) AddRewardToPackageById(params graphql.ResolveParams) (interface{}, error) {
 	user, ok := params.Context.Value(auth.UserKey).(coredb.User)
 	if !ok {
 		return nil, fmt.Errorf("user not found")
@@ -91,7 +91,7 @@ func (r *PackagesResolver) AddVoucherToPackageById(params graphql.ResolveParams)
 	}
 
 	packageID, _ := params.Args["packageID"].(string)
-	voucherID, _ := params.Args["voucherID"].(string)
+	rewardID, _ := params.Args["rewardID"].(string)
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
@@ -101,14 +101,14 @@ func (r *PackagesResolver) AddVoucherToPackageById(params graphql.ResolveParams)
 		return false, err
 	}
 
-	vchrID, err := primitive.ObjectIDFromHex(voucherID)
+	rwID, err := primitive.ObjectIDFromHex(rewardID)
 	if err != nil {
 		return false, err
 	}
 
 	filter := bson.M{"_id": pkgID}
 	update := bson.M{
-		"$addToSet": bson.M{"vouchers": vchrID},
+		"$addToSet": bson.M{"rewards": rwID},
 	}
 
 	_, err = r.PackagesRepo.Collection.UpdateOne(ctx, filter, update)
@@ -119,9 +119,9 @@ func (r *PackagesResolver) AddVoucherToPackageById(params graphql.ResolveParams)
 	return true, nil
 }
 
-func (r *PackagesResolver) RemoveVoucherFromPackageById(params graphql.ResolveParams) (interface{}, error) {
+func (r *PackagesResolver) RemoveRewardFromPackageById(params graphql.ResolveParams) (interface{}, error) {
 	packageID, _ := params.Args["packageID"].(string)
-	voucherID, _ := params.Args["voucherID"].(string)
+	rewardID, _ := params.Args["rewardID"].(string)
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
@@ -131,14 +131,14 @@ func (r *PackagesResolver) RemoveVoucherFromPackageById(params graphql.ResolvePa
 		return false, err
 	}
 
-	vchrID, err := primitive.ObjectIDFromHex(voucherID)
+	rwID, err := primitive.ObjectIDFromHex(rewardID)
 	if err != nil {
 		return false, err
 	}
 
 	filter := bson.M{"_id": pkgID}
 	update := bson.M{
-		"$pull": bson.M{"vouchers": vchrID},
+		"$pull": bson.M{"rewards": rwID},
 	}
 
 	_, err = r.PackagesRepo.Collection.UpdateOne(ctx, filter, update)

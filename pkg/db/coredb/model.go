@@ -50,13 +50,13 @@ type Package struct {
 }
 
 type Exchange struct {
-	ID                primitive.ObjectID `json:"id" bson:"_id"`
-	FirstUserID       string             `json:"firstUserId" bson:"first_user_id"`
-	FirstVoucherCode  string             `json:"firstVoucherCode" bson:"first_voucher_code"`
-	SecondUserID      string             `json:"secondUserId" bson:"second_user_id"`
-	SecondVoucherCode string             `json:"secondVoucherCode" bson:"second_voucher_code"`
-	CreatedAt         time.Time          `json:"createdAt" bson:"created_at"`
-	Completed         bool               `json:"completed" bson:"completed"`
+	ID             primitive.ObjectID `json:"id" bson:"_id"`
+	FirstUserID    string             `json:"firstUserId" bson:"first_user_id"`
+	FirstRwardID   string             `json:"firstRewardId" bson:"first_reward_id"`
+	SecondUserID   string             `json:"secondUserId" bson:"second_user_id"`
+	SecondRewardID string             `json:"secondRewardId" bson:"second_reward_id"`
+	CreatedAt      time.Time          `json:"createdAt" bson:"created_at"`
+	Completed      bool               `json:"completed" bson:"completed"`
 }
 
 type Gps struct {

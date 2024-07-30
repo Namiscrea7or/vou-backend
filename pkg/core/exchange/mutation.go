@@ -19,7 +19,7 @@ func InitExchangesMutation(r *ExchangesResolver) *ExchangesMutation {
 				"firstUserId": &graphql.ArgumentConfig{
 					Type: graphql.NewNonNull(graphql.String),
 				},
-				"firstVoucherCode": &graphql.ArgumentConfig{
+				"firstRewardId": &graphql.ArgumentConfig{
 					Type: graphql.NewNonNull(graphql.String),
 				},
 			},
@@ -35,7 +35,7 @@ func InitExchangesMutation(r *ExchangesResolver) *ExchangesMutation {
 				"secondUserId": &graphql.ArgumentConfig{
 					Type: graphql.NewNonNull(graphql.String),
 				},
-				"secondVoucherCode": &graphql.ArgumentConfig{
+				"secondRewardId": &graphql.ArgumentConfig{
 					Type: graphql.NewNonNull(graphql.String),
 				},
 			},
