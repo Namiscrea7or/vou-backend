@@ -15,9 +15,11 @@ func hasPermission(role Role, permission Permission) bool {
 
 var rolePermissionsMap = map[Role][]Permission{
 	Admin: {
+		PermissionGetGameSession,
 		PermissionManageGameSession,
 	},
 	User: {
+		PermissionGetGameSession,
 		PermissionPlayGame,
 	},
 }

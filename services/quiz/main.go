@@ -32,9 +32,11 @@ func main() {
 			response, err := quiz.HandleGameEvent(ctx, parsedMessage)
 			if err != nil {
 				response = &quiz.Response{
-					Type:    quiz.Failure,
-					Event:   quiz.Event(parsedMessage.Event),
-					Payload: err,
+					Status: quiz.Failure,
+					Event:  quiz.Event(parsedMessage.Event),
+					Payload: map[string]interface{}{
+						"message": err.Error(),
+					},
 				}
 			}
 

@@ -23,8 +23,8 @@ type EventHandler struct {
 type MessageType string
 
 type Message struct {
-	Event   string      `json:"event"`
-	Payload interface{} `json:"payload"`
+	Event   string `json:"event"`
+	Payload any    `json:"payload"`
 }
 
 type ContextKey int
