@@ -31,11 +31,6 @@ func (r *UsersResolver) RegisterAccount(params graphql.ResolveParams) (interface
 		return false, err
 	}
 
-	name, ok := params.Args["name"].(string)
-	if !ok {
-		fmt.Errorf("Don't find name")
-	}
-
 	username, ok := params.Args["username"].(string)
 	if !ok {
 		fmt.Errorf("Don't find username")
@@ -48,11 +43,6 @@ func (r *UsersResolver) RegisterAccount(params graphql.ResolveParams) (interface
 
 	hashed, _ := bcrypt.GenerateFromPassword([]byte(password), 8)
 	password = string(hashed)
-
-	email, ok := params.Args["email"].(string)
-	if !ok {
-		fmt.Errorf("Don't find email")
-	}
 
 	role, ok := params.Args["role"].(string)
 	if !ok {
@@ -69,6 +59,11 @@ func (r *UsersResolver) RegisterAccount(params graphql.ResolveParams) (interface
 		fmt.Errorf("Don't find dob")
 	}
 
+	phoneNumber, ok := params.Args["phoneNumber"].(string)
+	if !ok {
+		fmt.Errorf("Don't find phoneNumber")
+	}
+
 	gender, ok := params.Args["gender"].(bool)
 	if !ok {
 		fmt.Errorf("Don't find gender")
@@ -81,11 +76,11 @@ func (r *UsersResolver) RegisterAccount(params graphql.ResolveParams) (interface
 
 	user := coredb.User{
 		ID:              primitive.NewObjectID(),
-		Name:            name,
+		Name:            authProfile.Name,
 		Username:        username,
 		Password:        password,
-		Email:           email,
-		PhoneNumber:     authProfile.PhoneNumber,
+		Email:           authProfile.Email,
+		PhoneNumber:     phoneNumber,
 		Role:            role,
 		Status:          true,
 		ImageURL:        profilePicture,

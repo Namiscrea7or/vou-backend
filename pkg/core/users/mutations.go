@@ -13,16 +13,13 @@ func InitUserMutation(r *UsersResolver) *UsersMutation {
 			Description: "Register a new account",
 			Resolve:     r.RegisterAccount,
 			Args: graphql.FieldConfigArgument{
-				"name": &graphql.ArgumentConfig{
-					Type: graphql.NewNonNull(graphql.String),
-				},
 				"username": &graphql.ArgumentConfig{
 					Type: graphql.NewNonNull(graphql.String),
 				},
 				"password": &graphql.ArgumentConfig{
 					Type: graphql.NewNonNull(graphql.String),
 				},
-				"email": &graphql.ArgumentConfig{
+				"phoneNumber": &graphql.ArgumentConfig{
 					Type: graphql.NewNonNull(graphql.String),
 				},
 				"role": &graphql.ArgumentConfig{
