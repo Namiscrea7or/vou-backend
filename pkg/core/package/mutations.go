@@ -6,8 +6,8 @@ import (
 
 type PackagesMutation struct {
 	CreatePackage                  *graphql.Field
-	AddVoucherToPackageById        *graphql.Field
-	RemoveVoucherFromPackageById   *graphql.Field
+	AddRewardToPackageById         *graphql.Field
+	RemoveRewardFromPackageById    *graphql.Field
 	AddVoucherToPackageByCode      *graphql.Field
 	RemoveVoucherFromPackageByCode *graphql.Field
 }
@@ -27,31 +27,31 @@ func InitPackageMutation(r *PackagesResolver) *PackagesMutation {
 			},
 			Resolve: r.CreatePackage,
 		},
-		AddVoucherToPackageById: &graphql.Field{
+		AddRewardToPackageById: &graphql.Field{
 			Type:        graphql.Boolean,
 			Description: "Add a voucher to a package by id",
 			Args: graphql.FieldConfigArgument{
 				"packageID": &graphql.ArgumentConfig{
 					Type: graphql.NewNonNull(graphql.ID),
 				},
-				"voucherID": &graphql.ArgumentConfig{
+				"rewardID": &graphql.ArgumentConfig{
 					Type: graphql.NewNonNull(graphql.ID),
 				},
 			},
-			Resolve: r.AddVoucherToPackageById,
+			Resolve: r.AddRewardToPackageById,
 		},
-		RemoveVoucherFromPackageById: &graphql.Field{
+		RemoveRewardFromPackageById: &graphql.Field{
 			Type:        graphql.Boolean,
 			Description: "Remove a voucher from a package by id",
 			Args: graphql.FieldConfigArgument{
 				"packageID": &graphql.ArgumentConfig{
 					Type: graphql.NewNonNull(graphql.ID),
 				},
-				"voucherID": &graphql.ArgumentConfig{
+				"rewardID": &graphql.ArgumentConfig{
 					Type: graphql.NewNonNull(graphql.ID),
 				},
 			},
-			Resolve: r.RemoveVoucherFromPackageById,
+			Resolve: r.RemoveRewardFromPackageById,
 		},
 		AddVoucherToPackageByCode: &graphql.Field{
 			Type:        graphql.Boolean,

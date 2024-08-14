@@ -6,7 +6,7 @@ import (
 
 type ExchangesMutation struct {
 	CreateExchangeRequest *graphql.Field
-	AddVoucherToExchange  *graphql.Field
+	AddRewardToExchange   *graphql.Field
 	FinalizeExchange      *graphql.Field
 }
 
@@ -19,13 +19,13 @@ func InitExchangesMutation(r *ExchangesResolver) *ExchangesMutation {
 				"firstUserId": &graphql.ArgumentConfig{
 					Type: graphql.NewNonNull(graphql.String),
 				},
-				"firstVoucherCode": &graphql.ArgumentConfig{
+				"firstRewardId": &graphql.ArgumentConfig{
 					Type: graphql.NewNonNull(graphql.String),
 				},
 			},
 			Resolve: r.CreateExchangeRequest,
 		},
-		AddVoucherToExchange: &graphql.Field{
+		AddRewardToExchange: &graphql.Field{
 			Type:        graphql.Boolean,
 			Description: "Add a voucher to an existing exchange request",
 			Args: graphql.FieldConfigArgument{
@@ -35,11 +35,11 @@ func InitExchangesMutation(r *ExchangesResolver) *ExchangesMutation {
 				"secondUserId": &graphql.ArgumentConfig{
 					Type: graphql.NewNonNull(graphql.String),
 				},
-				"secondVoucherCode": &graphql.ArgumentConfig{
+				"secondRewardId": &graphql.ArgumentConfig{
 					Type: graphql.NewNonNull(graphql.String),
 				},
 			},
-			Resolve: r.AddVoucherToExchange,
+			Resolve: r.AddRewardToExchange,
 		},
 		FinalizeExchange: &graphql.Field{
 			Type:        graphql.Boolean,

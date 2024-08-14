@@ -10,8 +10,6 @@ const (
 )
 
 type Profile struct {
-	UID           string
-	Email         string
-	EmailVerified bool
-	Name          string
+	UID         string
+	PhoneNumber string
 }

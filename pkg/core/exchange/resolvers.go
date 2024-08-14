@@ -2,9 +2,11 @@ package exchange
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"time"
 
+	"vou/pkg/auth"
 	"vou/pkg/db"
 	"vou/pkg/db/coredb"
 
@@ -26,15 +28,24 @@ func NewExchangesResolver() *ExchangesResolver {
 }
 
 func (r *ExchangesResolver) CreateExchangeRequest(params graphql.ResolveParams) (interface{}, error) {
+	user, ok := params.Context.Value(auth.UserKey).(coredb.User)
+	if !ok {
+		return nil, fmt.Errorf("user not found")
+	}
+
+	if user.Role != "user" {
+		return nil, fmt.Errorf("Permission denied")
+	}
+
 	firstUserID := params.Args["firstUserId"].(string)
-	firstVoucherCode := params.Args["firstVoucherCode"].(string)
+	firstRewardId := params.Args["firstRewardId"].(string)
 
 	exchange := coredb.Exchange{
-		ID:               primitive.NewObjectID(),
-		FirstUserID:      firstUserID,
-		FirstVoucherCode: firstVoucherCode,
-		CreatedAt:        time.Now(),
-		Completed:        false,
+		ID:           primitive.NewObjectID(),
+		FirstUserID:  firstUserID,
+		FirstRwardID: firstRewardId,
+		CreatedAt:    time.Now(),
+		Completed:    false,
 	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
@@ -49,10 +60,19 @@ func (r *ExchangesResolver) CreateExchangeRequest(params graphql.ResolveParams) 
 	return true, nil
 }
 
-func (r *ExchangesResolver) AddVoucherToExchange(params graphql.ResolveParams) (interface{}, error) {
+func (r *ExchangesResolver) AddRewardToExchange(params graphql.ResolveParams) (interface{}, error) {
+	user, ok := params.Context.Value(auth.UserKey).(coredb.User)
+	if !ok {
+		return nil, fmt.Errorf("user not found")
+	}
+
+	if user.Role != "user" {
+		return nil, fmt.Errorf("Permission denied")
+	}
+
 	exchangeID := params.Args["exchangeId"].(string)
 	secondUserID := params.Args["secondUserId"].(string)
-	secondVoucherCode := params.Args["secondVoucherCode"].(string)
+	secondRwardId := params.Args["secondRwardId"].(string)
 
 	exchID, err := primitive.ObjectIDFromHex(exchangeID)
 	if err != nil {
@@ -64,7 +84,7 @@ func (r *ExchangesResolver) AddVoucherToExchange(params graphql.ResolveParams) (
 
 	filter := bson.M{"_id": exchID, "completed": false}
 	update := bson.M{
-		"$set": bson.M{"secondUserId": secondUserID, "secondVoucherCode": secondVoucherCode},
+		"$set": bson.M{"secondUserId": secondUserID, "secondRewardId": secondRwardId},
 	}
 
 	_, err = db.GetExchangeCollection().UpdateOne(ctx, filter, update)
@@ -94,7 +114,7 @@ func (r *ExchangesResolver) FinalizeExchange(params graphql.ResolveParams) (inte
 		return false, err
 	}
 
-	if err := r.swapVouchers(exchange); err != nil {
+	if err := r.swapRewards(exchange); err != nil {
 		return false, err
 	}
 
@@ -130,21 +150,21 @@ func (r *ExchangesResolver) GetExchangeRequests(params graphql.ResolveParams) (i
 	return exchanges, nil
 }
 
-func (r *ExchangesResolver) swapVouchers(exchange coredb.Exchange) error {
+func (r *ExchangesResolver) swapRewards(exchange coredb.Exchange) error {
 	firstUserId, _ := primitive.ObjectIDFromHex(exchange.FirstUserID)
 	secondUserId, _ := primitive.ObjectIDFromHex(exchange.SecondUserID)
 
-	if err := r.PackagesRepo.RemoveVoucherFromPackageByCode(firstUserId, exchange.FirstVoucherCode); err != nil {
+	if err := r.PackagesRepo.RemoveVoucherFromPackageByCode(firstUserId, exchange.FirstRwardID); err != nil {
 		return err
 	}
-	if err := r.PackagesRepo.AddVoucherToPackageByCode(firstUserId, exchange.SecondVoucherCode); err != nil {
+	if err := r.PackagesRepo.AddVoucherToPackageByCode(firstUserId, exchange.SecondRewardID); err != nil {
 		return err
 	}
 
-	if err := r.PackagesRepo.RemoveVoucherFromPackageByCode(secondUserId, exchange.SecondVoucherCode); err != nil {
+	if err := r.PackagesRepo.RemoveVoucherFromPackageByCode(secondUserId, exchange.SecondRewardID); err != nil {
 		return err
 	}
-	if err := r.PackagesRepo.AddVoucherToPackageByCode(secondUserId, exchange.FirstVoucherCode); err != nil {
+	if err := r.PackagesRepo.AddVoucherToPackageByCode(secondUserId, exchange.FirstRwardID); err != nil {
 		return err
 	}
 

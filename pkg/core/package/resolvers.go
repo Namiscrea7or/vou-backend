@@ -2,9 +2,11 @@ package packages
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"time"
 
+	"vou/pkg/auth"
 	"vou/pkg/db"
 	"vou/pkg/db/coredb"
 
@@ -44,6 +46,15 @@ func (r *PackagesResolver) CreatePackage(params graphql.ResolveParams) (interfac
 }
 
 func (r *PackagesResolver) GetPackageByID(params graphql.ResolveParams) (interface{}, error) {
+	user, ok := params.Context.Value(auth.UserKey).(coredb.User)
+	if !ok {
+		return nil, fmt.Errorf("user not found")
+	}
+
+	if user.Role != "user" || user.Role != "admin" {
+		return nil, fmt.Errorf("Permission denied")
+	}
+
 	id, ok := params.Args["id"].(string)
 	if !ok {
 		return nil, nil
@@ -69,9 +80,18 @@ func (r *PackagesResolver) GetPackageByID(params graphql.ResolveParams) (interfa
 	return pkg, nil
 }
 
-func (r *PackagesResolver) AddVoucherToPackageById(params graphql.ResolveParams) (interface{}, error) {
+func (r *PackagesResolver) AddRewardToPackageById(params graphql.ResolveParams) (interface{}, error) {
+	user, ok := params.Context.Value(auth.UserKey).(coredb.User)
+	if !ok {
+		return nil, fmt.Errorf("user not found")
+	}
+
+	if user.Role != "user" {
+		return nil, fmt.Errorf("Permission denied")
+	}
+
 	packageID, _ := params.Args["packageID"].(string)
-	voucherID, _ := params.Args["voucherID"].(string)
+	rewardID, _ := params.Args["rewardID"].(string)
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
@@ -81,14 +101,14 @@ func (r *PackagesResolver) AddVoucherToPackageById(params graphql.ResolveParams)
 		return false, err
 	}
 
-	vchrID, err := primitive.ObjectIDFromHex(voucherID)
+	rwID, err := primitive.ObjectIDFromHex(rewardID)
 	if err != nil {
 		return false, err
 	}
 
 	filter := bson.M{"_id": pkgID}
 	update := bson.M{
-		"$addToSet": bson.M{"vouchers": vchrID},
+		"$addToSet": bson.M{"rewards": rwID},
 	}
 
 	_, err = r.PackagesRepo.Collection.UpdateOne(ctx, filter, update)
@@ -99,9 +119,9 @@ func (r *PackagesResolver) AddVoucherToPackageById(params graphql.ResolveParams)
 	return true, nil
 }
 
-func (r *PackagesResolver) RemoveVoucherFromPackageById(params graphql.ResolveParams) (interface{}, error) {
+func (r *PackagesResolver) RemoveRewardFromPackageById(params graphql.ResolveParams) (interface{}, error) {
 	packageID, _ := params.Args["packageID"].(string)
-	voucherID, _ := params.Args["voucherID"].(string)
+	rewardID, _ := params.Args["rewardID"].(string)
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
@@ -111,14 +131,14 @@ func (r *PackagesResolver) RemoveVoucherFromPackageById(params graphql.ResolvePa
 		return false, err
 	}
 
-	vchrID, err := primitive.ObjectIDFromHex(voucherID)
+	rwID, err := primitive.ObjectIDFromHex(rewardID)
 	if err != nil {
 		return false, err
 	}
 
 	filter := bson.M{"_id": pkgID}
 	update := bson.M{
-		"$pull": bson.M{"vouchers": vchrID},
+		"$pull": bson.M{"rewards": rwID},
 	}
 
 	_, err = r.PackagesRepo.Collection.UpdateOne(ctx, filter, update)
@@ -130,6 +150,15 @@ func (r *PackagesResolver) RemoveVoucherFromPackageById(params graphql.ResolvePa
 }
 
 func (r *PackagesResolver) AddVoucherToPackageByCode(params graphql.ResolveParams) (interface{}, error) {
+	user, ok := params.Context.Value(auth.UserKey).(coredb.User)
+	if !ok {
+		return nil, fmt.Errorf("user not found")
+	}
+
+	if user.Role != "user" {
+		return nil, fmt.Errorf("Permission denied")
+	}
+
 	packageID, _ := params.Args["packageID"].(string)
 	voucherCode, _ := params.Args["voucherCode"].(string)
 

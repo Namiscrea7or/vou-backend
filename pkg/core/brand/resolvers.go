@@ -3,6 +3,7 @@ package brand
 import (
 	"fmt"
 	"log"
+	"vou/pkg/auth"
 	"vou/pkg/db/coredb"
 
 	"github.com/graphql-go/graphql"
@@ -21,6 +22,15 @@ func NewBrandResolver() *BrandResolver {
 }
 
 func (r *BrandResolver) CreateBrand(params graphql.ResolveParams) (interface{}, error) {
+	user, ok := params.Context.Value(auth.UserKey).(coredb.User)
+	if !ok {
+		return nil, fmt.Errorf("user not found")
+	}
+
+	if user.Role != "brand" {
+		return nil, fmt.Errorf("Permission denied")
+	}
+
 	name, ok := params.Args["name"].(string)
 	if !ok {
 		fmt.Errorf("Don't find name")
@@ -79,6 +89,15 @@ func (r *BrandResolver) CreateBrand(params graphql.ResolveParams) (interface{}, 
 }
 
 func (r *BrandResolver) GetBrandByID(params graphql.ResolveParams) (interface{}, error) {
+	user, ok := params.Context.Value(auth.UserKey).(coredb.User)
+	if !ok {
+		return nil, fmt.Errorf("user not found")
+	}
+
+	if user.Role != "brand" {
+		return nil, fmt.Errorf("Permission denied")
+	}
+
 	id, ok := params.Args["id"].(string)
 	if !ok {
 		return nil, nil
@@ -99,6 +118,15 @@ func (r *BrandResolver) GetBrandByID(params graphql.ResolveParams) (interface{},
 }
 
 func (r *BrandResolver) GetAllBrands(params graphql.ResolveParams) (interface{}, error) {
+	user, ok := params.Context.Value(auth.UserKey).(coredb.User)
+	if !ok {
+		return nil, fmt.Errorf("user not found")
+	}
+
+	if user.Role != "brand" {
+		return nil, fmt.Errorf("Permission denied")
+	}
+
 	brands, err := r.BrandRepo.GetAllBrands()
 	if err != nil {
 		log.Printf("failed to find Brands: %v\n", err)

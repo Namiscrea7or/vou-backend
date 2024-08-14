@@ -16,6 +16,9 @@ var packageType = graphql.NewObject(graphql.ObjectConfig{
 		"vouchers": &graphql.Field{
 			Type: graphql.NewList(graphql.String),
 		},
+		"rewards": &graphql.Field{
+			Type: graphql.NewList(graphql.String),
+		},
 		"allow_exchange": &graphql.Field{
 			Type: graphql.Boolean,
 		},
