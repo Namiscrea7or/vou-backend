@@ -5,7 +5,8 @@ import (
 )
 
 type UsersQuery struct {
-	User *graphql.Field
+	User        *graphql.Field
+	GetAllUsers *graphql.Field
 }
 
 func InitUserQuery(r *UsersResolver) *UsersQuery {
@@ -19,6 +20,11 @@ func InitUserQuery(r *UsersResolver) *UsersQuery {
 				},
 			},
 			Resolve: r.GetUserByEmail,
+		},
+		GetAllUsers: &graphql.Field{
+			Type:        graphql.NewList(userType),
+			Description: "Get all user",
+			Resolve:     r.GetAllUsers,
 		},
 	}
 }

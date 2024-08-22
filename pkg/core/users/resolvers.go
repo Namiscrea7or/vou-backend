@@ -124,3 +124,21 @@ func (r *UsersResolver) GetUserByEmail(params graphql.ResolveParams) (interface{
 
 	return user, nil
 }
+
+func (r *UsersResolver) GetAllUsers(params graphql.ResolveParams) (interface{}, error) {
+	user, ok := params.Context.Value(auth.UserKey).(coredb.User)
+	if !ok {
+		return nil, fmt.Errorf("user not found")
+	}
+
+	if user.Role != "admin" {
+		return nil, fmt.Errorf("Permission denied")
+	}
+
+	users, err := r.UsersRepo.GetAllUsers()
+	if err != nil {
+		return nil, fmt.Errorf("failed to find users: %v", err)
+	}
+
+	return users, nil
+}

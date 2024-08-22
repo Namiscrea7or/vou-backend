@@ -2,12 +2,14 @@ package coredb
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"time"
 
 	"vou/pkg/db"
 
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
@@ -61,4 +63,24 @@ func (r *UsersRepo) GetUserByEmail(email string) (User, error) {
 	err := r.FindOne(ctx, bson.M{"email": email}).Decode(&user)
 
 	return user, err
+}
+
+func (r *UsersRepo) GetAllUsers() ([]User, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	var users []User
+	cursor, err := r.Find(ctx, primitive.M{})
+	if err != nil {
+		return nil, fmt.Errorf("failed to find users: %v", err)
+	}
+
+	defer cursor.Close(ctx)
+
+	err = cursor.All(ctx, &users)
+	if err != nil {
+		return nil, err
+	}
+
+	return users, nil
 }
