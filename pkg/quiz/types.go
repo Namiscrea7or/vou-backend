@@ -54,10 +54,11 @@ type Event string
 
 const (
 	EventCreateGameSession Event = "create-game-session"
-	EventUpdateGameSession Event = "update-game-session"
+	EventNext              Event = "next"
 	EventJoinGameQueue     Event = "join-game-queue"
 	EventLeaveGameQueue    Event = "leave-game-queue"
 	EventGetGameSession    Event = "get-game-session"
+	EventAnswer            Event = "answer"
 )
 
 type Status string
@@ -71,4 +72,10 @@ type Response struct {
 	Status  Status `json:"status"`
 	Event   Event  `json:"event"`
 	Payload any    `json:"payload"`
+}
+
+type AnswerPayload struct {
+	GameID      string `json:"gameId"`
+	PlayerID    string `json:"playerId"`
+	OptionIndex int    `json:"optionIndex"`
 }

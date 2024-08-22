@@ -17,6 +17,7 @@ var rolePermissionsMap = map[Role][]Permission{
 	Admin: {
 		PermissionGetGameSession,
 		PermissionManageGameSession,
+		PermissionPlayGame,
 	},
 	User: {
 		PermissionGetGameSession,

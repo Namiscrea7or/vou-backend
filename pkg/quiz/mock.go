@@ -8,8 +8,8 @@ var mockIDTokenUserIDMap = map[string]string{
 }
 
 var mockUserIDRoleMap = map[string]Role{
-	"user":  User,
-	"admin": Admin,
+	"dev.ngtronghieu@gmail.com": User,
+	"nthieu21@clc.fitus.edu.vn": Admin,
 }
 
 var mockGameSessions = []GameSession{
@@ -19,7 +19,7 @@ var mockGameSessions = []GameSession{
 			BrandID:       "Test",
 			MaxPlayers:    40,
 			CurrentStage:  0,
-			StagePeriod:   10,
+			StagePeriod:   5,
 			OpenQueueTime: time.Now(),
 			Stages: []Stage{
 				{
@@ -36,36 +36,40 @@ var mockGameSessions = []GameSession{
 					AnswerIndex: 0,
 					Points:      5,
 				},
-				{
-					Question:    "Who painted the Mona Lisa?",
-					Explanation: "Leonardo da Vinci is the renowned artist behind the iconic Mona Lisa.",
-					Options:     []string{"Michelangelo", "Raphael", "Leonardo da Vinci", "Vincent van Gogh"},
-					AnswerIndex: 2,
-					Points:      7,
-				},
-				{
-					Question:    "What is the capital of Australia?",
-					Explanation: "Canberra is the capital city of Australia.",
-					Options:     []string{"Sydney", "Melbourne", "Brisbane", "Canberra"},
-					AnswerIndex: 3,
-					Points:      6,
-				},
-				{
-					Question:    "Which planet is closest to the Sun?",
-					Explanation: "Mercury is the closest planet to the Sun.",
-					Options:     []string{"Venus", "Earth", "Mars", "Mercury"},
-					AnswerIndex: 3,
-					Points:      8,
-				},
-				{
-					Question:    "What is the highest mountain in the world?",
-					Explanation: "Mount Everest is the tallest mountain above sea level.",
-					Options:     []string{"K2", "Mount Kilimanjaro", "Mount McKinley", "Mount Everest"},
-					AnswerIndex: 3,
-					Points:      10,
-				},
+				// {
+				// 	Question:    "Who painted the Mona Lisa?",
+				// 	Explanation: "Leonardo da Vinci is the renowned artist behind the iconic Mona Lisa.",
+				// 	Options:     []string{"Michelangelo", "Raphael", "Leonardo da Vinci", "Vincent van Gogh"},
+				// 	AnswerIndex: 2,
+				// 	Points:      7,
+				// },
+				// {
+				// 	Question:    "What is the capital of Australia?",
+				// 	Explanation: "Canberra is the capital city of Australia.",
+				// 	Options:     []string{"Sydney", "Melbourne", "Brisbane", "Canberra"},
+				// 	AnswerIndex: 3,
+				// 	Points:      6,
+				// },
+				// {
+				// 	Question:    "Which planet is closest to the Sun?",
+				// 	Explanation: "Mercury is the closest planet to the Sun.",
+				// 	Options:     []string{"Venus", "Earth", "Mars", "Mercury"},
+				// 	AnswerIndex: 3,
+				// 	Points:      8,
+				// },
+				// {
+				// 	Question:    "What is the highest mountain in the world?",
+				// 	Explanation: "Mount Everest is the tallest mountain above sea level.",
+				// 	Options:     []string{"K2", "Mount Kilimanjaro", "Mount McKinley", "Mount Everest"},
+				// 	AnswerIndex: 3,
+				// 	Points:      10,
+				// },
 			},
 		},
 		Status: Playing,
+		PlayerIDScoreMap: map[string]int{
+			"nthieu21@clc.fitus.edu.vn": 0,
+			"dev.ngtronghieu@gmail.com": 0,
+		},
 	},
 }

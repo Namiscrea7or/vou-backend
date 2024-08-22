@@ -13,10 +13,7 @@ func HandleGameEvent(ctx context.Context, message ws.Message) (*Response, error)
 	idToken := ctx.Value(ws.AuthKey).(string)
 
 	// Step 2: Get user profile based on jwt
-	userID, found := mockIDTokenUserIDMap[idToken]
-	if !found {
-		return nil, ErrorUserNotFound
-	}
+	userID := idToken // need to handle correctly
 
 	// Step 3: Authorize user based on his/her role and event
 	role, found := mockUserIDRoleMap[userID]
@@ -57,21 +54,22 @@ func HandleGameEvent(ctx context.Context, message ws.Message) (*Response, error)
 
 		return nil, fmt.Errorf("game session not found")
 
-	case string(EventUpdateGameSession):
-		jsonData, err := json.Marshal(message.Payload)
-		if err != nil {
-			return nil, err
+	case string(EventNext):
+		gameSessionID, found := message.Payload.(map[string]interface{})["sessionId"].(string)
+		if !found {
+			return nil, fmt.Errorf("missing sessionId field")
 		}
 
 		var gameSession GameSession
-		err = json.Unmarshal(jsonData, &gameSession)
-		if err != nil {
-			return nil, err
-		}
 
 		for i, s := range mockGameSessions {
-			if s.ID == gameSession.ID {
-				mockGameSessions[i] = gameSession
+			if s.ID == gameSessionID {
+				if mockGameSessions[i].Config.CurrentStage < len(mockGameSessions[i].Config.Stages)-1 {
+					mockGameSessions[i].Config.CurrentStage++
+				} else {
+					mockGameSessions[i].Status = Finished
+				}
+				gameSession = mockGameSessions[i]
 			}
 		}
 
@@ -81,6 +79,32 @@ func HandleGameEvent(ctx context.Context, message ws.Message) (*Response, error)
 			Payload: gameSession,
 		}, nil
 
+	case string(EventAnswer):
+		jsonData, err := json.Marshal(message.Payload)
+		if err != nil {
+			return nil, err
+		}
+
+		var answer AnswerPayload
+		err = json.Unmarshal(jsonData, &answer)
+		if err != nil {
+			return nil, err
+		}
+
+		for i, s := range mockGameSessions {
+			if s.ID == answer.GameID {
+				stage := mockGameSessions[i].Config.Stages[mockGameSessions[i].Config.CurrentStage]
+				if stage.AnswerIndex == answer.OptionIndex {
+					mockGameSessions[i].PlayerIDScoreMap[answer.PlayerID] += stage.Points
+				}
+			}
+		}
+
+		return &Response{
+			Status:  Success,
+			Event:   EventAnswer,
+			Payload: nil,
+		}, nil
 	}
 
 	return nil, nil
@@ -90,7 +114,7 @@ func getPermissionByEvent(event string) (Permission, error) {
 	switch event {
 	case string(EventCreateGameSession):
 		return PermissionManageGameSession, nil
-	case string(EventUpdateGameSession):
+	case string(EventNext):
 		return PermissionManageGameSession, nil
 	case string(EventJoinGameQueue):
 		return PermissionPlayGame, nil
@@ -98,6 +122,8 @@ func getPermissionByEvent(event string) (Permission, error) {
 		return PermissionPlayGame, nil
 	case string(EventGetGameSession):
 		return PermissionGetGameSession, nil
+	case string(EventAnswer):
+		return PermissionPlayGame, nil
 	default:
 		return "", ErrorInvalidEvent
 	}
