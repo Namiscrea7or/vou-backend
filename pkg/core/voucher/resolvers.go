@@ -98,3 +98,21 @@ func (r *VouchersResolver) GetVoucherByCode(params graphql.ResolveParams) (inter
 
 	return voucher, nil
 }
+
+func (r *VouchersResolver) GetAllVouchers(params graphql.ResolveParams) (interface{}, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	var vouchers []coredb.Voucher
+	cursor, err := db.GetVoucherCollection().Find(ctx, bson.M{})
+	if err != nil {
+		return nil, fmt.Errorf("failed to find vouchers: %v", err)
+	}
+	defer cursor.Close(ctx)
+
+	if err = cursor.All(ctx, &vouchers); err != nil {
+		return nil, fmt.Errorf("failed to decode vouchers: %v", err)
+	}
+
+	return vouchers, nil
+}

@@ -2,6 +2,7 @@ package coredb
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"time"
 
@@ -70,4 +71,24 @@ func (r *VouchersRepo) GetVoucherByID(id primitive.ObjectID) (*Voucher, error) {
 	}
 
 	return &voucher, nil
+}
+
+func (r *UsersRepo) GetAllVouchers() ([]Voucher, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	var vouchers []Voucher
+	cursor, err := r.Find(ctx, primitive.M{})
+	if err != nil {
+		return nil, fmt.Errorf("failed to find users: %v", err)
+	}
+
+	defer cursor.Close(ctx)
+
+	err = cursor.All(ctx, &vouchers)
+	if err != nil {
+		return nil, err
+	}
+
+	return vouchers, nil
 }

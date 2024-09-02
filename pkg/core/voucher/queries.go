@@ -7,6 +7,7 @@ import (
 type VouchersQuery struct {
 	Voucher       *graphql.Field
 	VoucherByCode *graphql.Field
+	Vouchers      *graphql.Field
 }
 
 func InitVoucherQuery(r *VouchersResolver) *VouchersQuery {
@@ -30,6 +31,11 @@ func InitVoucherQuery(r *VouchersResolver) *VouchersQuery {
 				},
 			},
 			Resolve: r.GetVoucherByCode,
+		},
+		Vouchers: &graphql.Field{
+			Type:        graphql.NewList(VoucherType),
+			Description: "Get all vouchers",
+			Resolve:     r.GetAllVouchers,
 		},
 	}
 }
