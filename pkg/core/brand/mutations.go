@@ -12,7 +12,7 @@ func InitBrandsMutation(r *BrandResolver) *BrandMutation {
 	return &BrandMutation{
 		CreateBrand: &graphql.Field{
 			Type:        graphql.Boolean,
-			Description: "Create a new Branch",
+			Description: "Create a new Brand",
 			Args: graphql.FieldConfigArgument{
 				"name": &graphql.ArgumentConfig{
 					Type: graphql.NewNonNull(graphql.String),

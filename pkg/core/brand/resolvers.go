@@ -27,7 +27,7 @@ func (r *BrandResolver) CreateBrand(params graphql.ResolveParams) (interface{}, 
 		return nil, fmt.Errorf("user not found")
 	}
 
-	if user.Role != "brand" {
+	if user.Role != "admin" {
 		return nil, fmt.Errorf("Permission denied")
 	}
 
