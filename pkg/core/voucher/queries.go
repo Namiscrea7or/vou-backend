@@ -5,9 +5,10 @@ import (
 )
 
 type VouchersQuery struct {
-	Voucher       *graphql.Field
-	VoucherByCode *graphql.Field
-	Vouchers      *graphql.Field
+	Voucher           *graphql.Field
+	VoucherByCode     *graphql.Field
+	Vouchers          *graphql.Field
+	VouchersByBrandId *graphql.Field
 }
 
 func InitVoucherQuery(r *VouchersResolver) *VouchersQuery {
@@ -36,6 +37,17 @@ func InitVoucherQuery(r *VouchersResolver) *VouchersQuery {
 			Type:        graphql.NewList(VoucherType),
 			Description: "Get all vouchers",
 			Resolve:     r.GetAllVouchers,
+		},
+
+		VouchersByBrandId: &graphql.Field{
+			Type:        graphql.NewList(VoucherType),
+			Description: "Get all vouchers",
+			Args: graphql.FieldConfigArgument{
+				"brandId": &graphql.ArgumentConfig{
+					Type: graphql.NewNonNull(graphql.String),
+				},
+			},
+			Resolve: r.GetAllVouchers,
 		},
 	}
 }

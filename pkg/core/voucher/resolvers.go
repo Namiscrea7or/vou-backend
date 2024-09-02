@@ -38,6 +38,7 @@ func (r *VouchersResolver) CreateVoucher(params graphql.ResolveParams) (interfac
 	voucher := coredb.Voucher{
 		ID:          primitive.NewObjectID(),
 		Code:        params.Args["code"].(string),
+		BrandId:     params.Args["brandId"].(string),
 		ImageURL:    params.Args["imageURL"].(string),
 		Value:       params.Args["value"].(float64),
 		Description: params.Args["description"].(string),
@@ -115,4 +116,166 @@ func (r *VouchersResolver) GetAllVouchers(params graphql.ResolveParams) (interfa
 	}
 
 	return vouchers, nil
+}
+
+func (r *VouchersResolver) GetVouchersByBrandId(params graphql.ResolveParams) (interface{}, error) {
+	user, ok := params.Context.Value(auth.UserKey).(coredb.User)
+	if !ok {
+		return nil, fmt.Errorf("user not found")
+	}
+
+	if user.Role != "brand" {
+		return nil, fmt.Errorf("Permission denied")
+	}
+
+	brandId, ok := params.Args["brandId"].(string)
+	if !ok {
+		return nil, fmt.Errorf("missing brand ID")
+	}
+
+	brandObjectID, err := primitive.ObjectIDFromHex(brandId)
+	if err != nil {
+		return nil, fmt.Errorf("invalid brand ID")
+	}
+
+	if user.ID != brandObjectID {
+		return nil, fmt.Errorf("Brand ID does not match")
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	var vouchers []coredb.Voucher
+	cursor, err := db.GetVoucherCollection().Find(ctx, bson.M{"brandId": brandObjectID})
+	if err != nil {
+		return nil, fmt.Errorf("failed to find vouchers: %v", err)
+	}
+	defer cursor.Close(ctx)
+
+	if err = cursor.All(ctx, &vouchers); err != nil {
+		return nil, fmt.Errorf("failed to decode vouchers: %v", err)
+	}
+
+	return vouchers, nil
+}
+
+func (r *VouchersResolver) EditVoucher(params graphql.ResolveParams) (interface{}, error) {
+	user, ok := params.Context.Value(auth.UserKey).(coredb.User)
+	if !ok {
+		return nil, fmt.Errorf("user not found")
+	}
+
+	if user.Role != "brand" {
+		return nil, fmt.Errorf("Permission denied")
+	}
+
+	id, ok := params.Args["id"].(string)
+	if !ok {
+		return nil, fmt.Errorf("missing voucher ID")
+	}
+
+	objectID, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		return nil, fmt.Errorf("invalid voucher ID")
+	}
+
+	brandId, ok := params.Args["brandId"].(string)
+	if !ok {
+		return nil, fmt.Errorf("missing brand ID")
+	}
+
+	brandObjectID, err := primitive.ObjectIDFromHex(brandId)
+	if err != nil {
+		return nil, fmt.Errorf("invalid brand ID")
+	}
+
+	if user.ID != brandObjectID {
+		return nil, fmt.Errorf("Brand ID does not match")
+	}
+
+	update := bson.M{}
+	if code, ok := params.Args["code"].(string); ok {
+		update["code"] = code
+	}
+	if imageURL, ok := params.Args["imageURL"].(string); ok {
+		update["imageURL"] = imageURL
+	}
+	if value, ok := params.Args["value"].(float64); ok {
+		update["value"] = value
+	}
+	if description, ok := params.Args["description"].(string); ok {
+		update["description"] = description
+	}
+	if expiredDate, ok := params.Args["expiredDate"].(time.Time); ok {
+		update["expiredDate"] = expiredDate
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	result, err := db.GetVoucherCollection().UpdateOne(
+		ctx,
+		bson.M{"_id": objectID, "brandId": brandId},
+		bson.M{"$set": update},
+	)
+	if err != nil {
+		log.Printf("failed to update voucher: %v\n", err)
+		return nil, fmt.Errorf("failed to update voucher: %v", err)
+	}
+
+	if result.MatchedCount == 0 {
+		return nil, fmt.Errorf("no matching voucher found")
+	}
+
+	return true, nil
+}
+
+func (r *VouchersResolver) DeleteVoucher(params graphql.ResolveParams) (interface{}, error) {
+	user, ok := params.Context.Value(auth.UserKey).(coredb.User)
+	if !ok {
+		return nil, fmt.Errorf("user not found")
+	}
+
+	if user.Role != "brand" {
+		return nil, fmt.Errorf("Permission denied")
+	}
+
+	id, ok := params.Args["id"].(string)
+	if !ok {
+		return nil, fmt.Errorf("missing voucher ID")
+	}
+
+	objectID, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		return nil, fmt.Errorf("invalid voucher ID")
+	}
+
+	brandId, ok := params.Args["brandId"].(string)
+	if !ok {
+		return nil, fmt.Errorf("missing brand ID")
+	}
+
+	brandObjectID, err := primitive.ObjectIDFromHex(brandId)
+	if err != nil {
+		return nil, fmt.Errorf("invalid brand ID")
+	}
+
+	if user.ID != brandObjectID {
+		return nil, fmt.Errorf("Brand ID does not match")
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	result, err := db.GetVoucherCollection().DeleteOne(ctx, bson.M{"_id": objectID, "brandId": brandObjectID})
+	if err != nil {
+		log.Printf("failed to delete voucher: %v\n", err)
+		return nil, fmt.Errorf("failed to delete voucher: %v", err)
+	}
+
+	if result.DeletedCount == 0 {
+		return nil, fmt.Errorf("no matching voucher found or you don't have permission to delete it")
+	}
+
+	return true, nil
 }

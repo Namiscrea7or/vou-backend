@@ -46,15 +46,16 @@ func InitSchema() graphql.Schema {
 	rootQuery := graphql.NewObject(graphql.ObjectConfig{
 		Name: "RootQuery",
 		Fields: graphql.Fields{
-			"user":               usersQuery.User,
-			"voucherById":        vouchersQuery.Voucher,
-			"voucherByCode":      vouchersQuery.VoucherByCode,
-			"getAllVouchers":     vouchersQuery.Vouchers,
-			"package":            packagesQuery.Package,
-			"brandById":          brandQuery.BrandRequest,
-			"getAllBrand":        brandQuery.AllBrandRequest,
-			"getGameSessionByID": gameSessionQuery.GameSession,
-			"getRewardByID":      rewardQuery.Reward,
+			"user":                    usersQuery.User,
+			"voucherById":             vouchersQuery.Voucher,
+			"voucherByCode":           vouchersQuery.VoucherByCode,
+			"getAllVouchers":          vouchersQuery.Vouchers,
+			"getAllVouchersByBrandId": vouchersQuery.VouchersByBrandId,
+			"package":                 packagesQuery.Package,
+			"brandById":               brandQuery.BrandRequest,
+			"getAllBrand":             brandQuery.AllBrandRequest,
+			"getGameSessionByID":      gameSessionQuery.GameSession,
+			"getRewardByID":           rewardQuery.Reward,
 		},
 	})
 
@@ -63,6 +64,8 @@ func InitSchema() graphql.Schema {
 		Fields: graphql.Fields{
 			"registerAccount":                usersMutation.RegisterAccount,
 			"createVoucher":                  vouchersMutation.CreateVoucher,
+			"editVoucher":                    vouchersMutation.EditVoucher,
+			"deleteVoucher":                  vouchersMutation.DeleteVoucher,
 			"createPackage":                  packagesMutation.CreatePackage,
 			"addVoucherToPackageById":        packagesMutation.AddRewardToPackageById,
 			"removeVoucherFromPackageById":   packagesMutation.RemoveRewardFromPackageById,

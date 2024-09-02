@@ -27,6 +27,7 @@ type User struct {
 type Voucher struct {
 	ID          primitive.ObjectID `json:"id" bson:"_id"`
 	Code        string             `json:"code" bson:"code"`
+	BrandId     string             `json:"brandId" bson:"brand_id"`
 	ImageURL    string             `json:"imageURL" bson:"image_url"`
 	Value       float64            `json:"value" bson:"value"`
 	Description string             `json:"description" bson:"description"`
