@@ -159,7 +159,7 @@ func (r *UsersResolver) Login(params graphql.ResolveParams) (interface{}, error)
 	defer cancel()
 
 	var user coredb.User
-	err := db.GetUsersCollection().FindOne(ctx, bson.M{"username": username}).Decode(&user)
+	err := db.GetUsersCollection().FindOne(ctx, bson.M{"user_name": username}).Decode(&user)
 	if err != nil {
 		log.Printf("failed to find user: %v\n", err)
 		return nil, fmt.Errorf("invalid username or password")
