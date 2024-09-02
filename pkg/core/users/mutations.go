@@ -4,6 +4,7 @@ import "github.com/graphql-go/graphql"
 
 type UsersMutation struct {
 	RegisterAccount *graphql.Field
+	Login           *graphql.Field
 }
 
 func InitUserMutation(r *UsersResolver) *UsersMutation {
@@ -38,6 +39,29 @@ func InitUserMutation(r *UsersResolver) *UsersMutation {
 					Type: graphql.NewNonNull(graphql.String),
 				},
 			},
+		},
+		Login: &graphql.Field{
+			Type: graphql.NewObject(graphql.ObjectConfig{
+				Name: "LoginResponse",
+				Fields: graphql.Fields{
+					"token": &graphql.Field{
+						Type: graphql.String,
+					},
+					"user": &graphql.Field{
+						Type: userType,
+					},
+				},
+			}),
+			Description: "Login a user and return a JWT token",
+			Args: graphql.FieldConfigArgument{
+				"username": &graphql.ArgumentConfig{
+					Type: graphql.NewNonNull(graphql.String),
+				},
+				"password": &graphql.ArgumentConfig{
+					Type: graphql.NewNonNull(graphql.String),
+				},
+			},
+			Resolve: r.Login,
 		},
 	}
 }
