@@ -4,11 +4,13 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"os"
 	"time"
 
 	"vou/pkg/auth"
 	"vou/pkg/db"
 	"vou/pkg/db/coredb"
+	"vou/pkg/storage"
 
 	"github.com/graphql-go/graphql"
 	"go.mongodb.org/mongo-driver/bson"
@@ -75,6 +77,16 @@ func (r *UsersResolver) RegisterAccount(params graphql.ResolveParams) (interface
 		fmt.Errorf("Don't find facebook Account")
 	}
 
+	bucketName := os.Getenv("FIREBASE_BUCKET_NAME")
+	if bucketName == "" {
+		return false, fmt.Errorf("Missing Firebase bucket name")
+	}
+
+	imageURL, err := storage.UploadFileToFirebaseStorage(bucketName, profilePicture, "profile_pictures/"+username)
+	if err != nil {
+		return false, fmt.Errorf("Failed to upload image: %v", err)
+	}
+
 	user := coredb.User{
 		ID:              primitive.NewObjectID(),
 		Name:            authProfile.Name,
@@ -84,7 +96,7 @@ func (r *UsersResolver) RegisterAccount(params graphql.ResolveParams) (interface
 		PhoneNumber:     phoneNumber,
 		Role:            role,
 		Status:          true,
-		ImageURL:        profilePicture,
+		ImageURL:        imageURL,
 		DateOfBirth:     dob,
 		Gender:          gender,
 		FacebookAccount: facebookAccount,
