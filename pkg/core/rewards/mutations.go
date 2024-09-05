@@ -13,7 +13,21 @@ func InitRewardsMutation(r *RewardsResolver) *RewardsMutation {
 		CreateReward: &graphql.Field{
 			Type:        graphql.Boolean,
 			Description: "Create a new reward",
-			Resolve:     r.CreateReward,
+			Args: graphql.FieldConfigArgument{
+				"name": &graphql.ArgumentConfig{
+					Type: graphql.NewNonNull(graphql.String),
+				},
+				"description": &graphql.ArgumentConfig{
+					Type: graphql.NewNonNull(graphql.String),
+				},
+				"type": &graphql.ArgumentConfig{
+					Type: graphql.NewNonNull(graphql.String),
+				},
+				"value": &graphql.ArgumentConfig{
+					Type: graphql.NewNonNull(graphql.String),
+				},
+			},
+			Resolve: r.CreateReward,
 		},
 	}
 }
