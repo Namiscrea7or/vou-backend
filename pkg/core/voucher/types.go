@@ -11,6 +11,9 @@ var VoucherType = graphql.NewObject(graphql.ObjectConfig{
 		"code": &graphql.Field{
 			Type: graphql.String,
 		},
+		"brandId": &graphql.Field{
+			Type: graphql.String,
+		},
 		"imageURL": &graphql.Field{
 			Type: graphql.String,
 		},
