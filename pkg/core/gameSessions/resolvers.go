@@ -107,3 +107,67 @@ func (r *GameSessionsResolver) AddRewardToGameSession(params graphql.ResolvePara
 
 	return true, nil
 }
+
+func (r *GameSessionsResolver) GetAllGameSessions(params graphql.ResolveParams) (interface{}, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	cursor, err := db.GetGameSessionsCollection().Find(ctx, bson.M{})
+	if err != nil {
+		log.Printf("failed to get game sessions: %v\n", err)
+		return nil, err
+	}
+	defer cursor.Close(ctx)
+
+	var gameSessions []coredb.GameSession
+	if err = cursor.All(ctx, &gameSessions); err != nil {
+		log.Printf("failed to decode game sessions: %v\n", err)
+		return nil, err
+	}
+
+	return gameSessions, nil
+}
+
+func (r *GameSessionsResolver) EditGameSession(params graphql.ResolveParams) (interface{}, error) {
+	id, err := primitive.ObjectIDFromHex(params.Args["id"].(string))
+	if err != nil {
+		return false, err
+	}
+
+	status, _ := params.Args["status"].(bool)
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	update := bson.M{
+		"$set": bson.M{
+			"status": status,
+		},
+	}
+
+	_, err = db.GetGameSessionsCollection().UpdateOne(ctx, bson.M{"_id": id}, update)
+	if err != nil {
+		log.Printf("failed to edit game session: %v\n", err)
+		return false, err
+	}
+
+	return true, nil
+}
+
+func (r *GameSessionsResolver) DeleteGameSession(params graphql.ResolveParams) (interface{}, error) {
+	id, err := primitive.ObjectIDFromHex(params.Args["id"].(string))
+	if err != nil {
+		return false, err
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	_, err = db.GetGameSessionsCollection().DeleteOne(ctx, bson.M{"_id": id})
+	if err != nil {
+		log.Printf("failed to delete game session: %v\n", err)
+		return false, err
+	}
+
+	return true, nil
+}
