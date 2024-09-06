@@ -22,6 +22,10 @@ type UsersResolver struct {
 	UsersRepo *coredb.UsersRepo
 }
 
+type UserPackageResolver struct {
+	UserPackageRepo *coredb.PackagesRepo
+}
+
 func NewUsersResolver() *UsersResolver {
 	return &UsersResolver{
 		UsersRepo: coredb.NewUsersRepo(),
@@ -112,6 +116,20 @@ func (r *UsersResolver) RegisterAccount(params graphql.ResolveParams) (interface
 	if err != nil {
 		log.Printf("failed to insert user: %v\n", err)
 		return false, err
+	}
+
+	packageDoc := coredb.Package{
+		ID:            primitive.NewObjectID(),
+		UserID:        user.ID.Hex(),
+		Vouchers:      []string{},
+		Rewards:       []string{},
+		AllowExchange: true,
+	}
+
+	_, err = db.GetPackageCollection().InsertOne(ctx, packageDoc)
+	if err != nil {
+		log.Printf("failed to create package for user: %v\n", err)
+		return nil, err
 	}
 
 	return true, nil

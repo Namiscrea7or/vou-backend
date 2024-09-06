@@ -77,6 +77,7 @@ type Brand struct {
 
 type GameSession struct {
 	ID        primitive.ObjectID `json:"id" bson:"_id,omitempty"`
+	Name      string             `json:"name" bson:"name"`
 	StartTime time.Time          `json:"startTime" bson:"start_time"`
 	EndTime   time.Time          `json:"endTime,omitempty" bson:"end_time,omitempty"`
 	Status    bool               `json:"status" bson:"status"`

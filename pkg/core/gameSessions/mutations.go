@@ -16,7 +16,21 @@ func InitGameSessionsMutation(r *GameSessionsResolver) *GameSessionsMutation {
 		CreateGameSession: &graphql.Field{
 			Type:        graphql.Boolean,
 			Description: "Create a new game session",
-			Resolve:     r.CreateGameSession,
+			Args: graphql.FieldConfigArgument{
+				"name": &graphql.ArgumentConfig{
+					Type: graphql.NewNonNull(graphql.String),
+				},
+				"startTime": &graphql.ArgumentConfig{
+					Type: graphql.DateTime,
+				},
+				"endTime": &graphql.ArgumentConfig{
+					Type: graphql.DateTime,
+				},
+				"rewards": &graphql.ArgumentConfig{
+					Type: graphql.NewList(graphql.String),
+				},
+			},
+			Resolve: r.CreateGameSession,
 		},
 		AddRewardToGameSession: &graphql.Field{
 			Type:        graphql.Boolean,
@@ -38,8 +52,17 @@ func InitGameSessionsMutation(r *GameSessionsResolver) *GameSessionsMutation {
 				"id": &graphql.ArgumentConfig{
 					Type: graphql.NewNonNull(graphql.ID),
 				},
+				"name": &graphql.ArgumentConfig{
+					Type: graphql.String,
+				},
 				"status": &graphql.ArgumentConfig{
 					Type: graphql.NewNonNull(graphql.Boolean),
+				},
+				"startTime": &graphql.ArgumentConfig{
+					Type: graphql.DateTime,
+				},
+				"endTime": &graphql.ArgumentConfig{
+					Type: graphql.DateTime,
 				},
 			},
 			Resolve: r.EditGameSession,

@@ -2,9 +2,11 @@ package gameSessions
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"time"
 
+	"vou/pkg/auth"
 	"vou/pkg/db"
 	"vou/pkg/db/coredb"
 
@@ -24,10 +26,25 @@ func NewGameSessionsResolver() *GameSessionsResolver {
 }
 
 func (r *GameSessionsResolver) CreateGameSession(params graphql.ResolveParams) (interface{}, error) {
+	user, ok := params.Context.Value(auth.UserKey).(coredb.User)
+	if !ok {
+		return nil, fmt.Errorf("user not found")
+	}
+
+	if user.Role != "admin" {
+		return nil, fmt.Errorf("Permission denied")
+	}
+
+	name, _ := params.Args["name"].(string)
+	startTime, _ := params.Args["startTime"].(time.Time)
+	endTime, _ := params.Args["endTime"].(time.Time)
+
 	gameSession := coredb.GameSession{
 		ID:        primitive.NewObjectID(),
-		StartTime: time.Now(),
-		EndTime:   time.Now(), // change later
+		Name:      name,
+		StartTime: startTime,
+		EndTime:   endTime,
+		Rewards:   []string{},
 		Status:    true,
 	}
 
@@ -129,20 +146,42 @@ func (r *GameSessionsResolver) GetAllGameSessions(params graphql.ResolveParams) 
 }
 
 func (r *GameSessionsResolver) EditGameSession(params graphql.ResolveParams) (interface{}, error) {
+	user, ok := params.Context.Value(auth.UserKey).(coredb.User)
+	if !ok {
+		return nil, fmt.Errorf("user not found")
+	}
+
+	if user.Role != "admin" {
+		return nil, fmt.Errorf("Permission denied")
+	}
+
 	id, err := primitive.ObjectIDFromHex(params.Args["id"].(string))
 	if err != nil {
 		return false, err
 	}
 
 	status, _ := params.Args["status"].(bool)
+	name, _ := params.Args["name"].(string)
+	startTime, _ := params.Args["startTime"].(time.Time)
+	endTime, _ := params.Args["endTime"].(time.Time)
+
+	updateFields := bson.M{}
+	if name != "" {
+		updateFields["name"] = name
+	}
+	updateFields["status"] = status
+	if !startTime.IsZero() {
+		updateFields["startTime"] = startTime
+	}
+	if !endTime.IsZero() {
+		updateFields["endTime"] = endTime
+	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
 	update := bson.M{
-		"$set": bson.M{
-			"status": status,
-		},
+		"$set": updateFields,
 	}
 
 	_, err = db.GetGameSessionsCollection().UpdateOne(ctx, bson.M{"_id": id}, update)

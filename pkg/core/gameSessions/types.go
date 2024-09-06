@@ -8,6 +8,9 @@ var gameSessionType = graphql.NewObject(graphql.ObjectConfig{
 		"id": &graphql.Field{
 			Type: graphql.ID,
 		},
+		"name": &graphql.Field{
+			Type: graphql.NewNonNull(graphql.String),
+		},
 		"startTime": &graphql.Field{
 			Type: graphql.DateTime,
 		},
