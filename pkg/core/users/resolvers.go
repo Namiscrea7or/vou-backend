@@ -118,18 +118,20 @@ func (r *UsersResolver) RegisterAccount(params graphql.ResolveParams) (interface
 		return false, err
 	}
 
-	packageDoc := coredb.Package{
-		ID:            primitive.NewObjectID(),
-		UserID:        user.ID.Hex(),
-		Vouchers:      []string{},
-		Rewards:       []string{},
-		AllowExchange: true,
-	}
+	if user.Role == "user" {
+		packageDoc := coredb.Package{
+			ID:            primitive.NewObjectID(),
+			UserID:        user.ID.Hex(),
+			Vouchers:      []string{},
+			Rewards:       []string{},
+			AllowExchange: true,
+		}
 
-	_, err = db.GetPackageCollection().InsertOne(ctx, packageDoc)
-	if err != nil {
-		log.Printf("failed to create package for user: %v\n", err)
-		return nil, err
+		_, err = db.GetPackageCollection().InsertOne(ctx, packageDoc)
+		if err != nil {
+			log.Printf("failed to create package for user: %v\n", err)
+			return nil, err
+		}
 	}
 
 	return true, nil
