@@ -19,6 +19,9 @@ func InitRewardsMutation(r *RewardsResolver) *RewardsMutation {
 				"name": &graphql.ArgumentConfig{
 					Type: graphql.NewNonNull(graphql.String),
 				},
+				"gameId": &graphql.ArgumentConfig{
+					Type: graphql.NewNonNull(graphql.String),
+				},
 				"image": &graphql.ArgumentConfig{
 					Type: graphql.NewNonNull(graphql.String),
 				},

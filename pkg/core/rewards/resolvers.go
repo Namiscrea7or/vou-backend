@@ -42,6 +42,23 @@ func (r *RewardsResolver) CreateReward(params graphql.ResolveParams) (interface{
 		return false, err
 	}
 
+	gameSessionID, err := primitive.ObjectIDFromHex(params.Args["gameId"].(string))
+	if err != nil {
+		log.Printf("invalid game session ID: %v\n", err)
+		return false, err
+	}
+
+	filter := bson.M{"_id": gameSessionID}
+	update := bson.M{
+		"$addToSet": bson.M{"rewards": reward.ID.Hex()},
+	}
+
+	_, err = db.GetGameSessionsCollection().UpdateOne(ctx, filter, update)
+	if err != nil {
+		log.Printf("failed to add reward to game session: %v\n", err)
+		return false, err
+	}
+
 	return true, nil
 }
 
