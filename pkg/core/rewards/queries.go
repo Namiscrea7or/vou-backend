@@ -12,7 +12,7 @@ type RewardsQuery struct {
 func InitRewardsQuery(r *RewardsResolver) *RewardsQuery {
 	return &RewardsQuery{
 		Reward: &graphql.Field{
-			Type:        rewardType,
+			Type:        RewardType,
 			Description: "Get a reward by ID",
 			Args: graphql.FieldConfigArgument{
 				"id": &graphql.ArgumentConfig{
@@ -22,7 +22,7 @@ func InitRewardsQuery(r *RewardsResolver) *RewardsQuery {
 			Resolve: r.GetRewardByID,
 		},
 		Rewards: &graphql.Field{
-			Type:        graphql.NewList(rewardType),
+			Type:        graphql.NewList(RewardType),
 			Description: "Get all rewards",
 			Resolve:     r.GetAllRewards,
 		},

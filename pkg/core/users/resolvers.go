@@ -13,7 +13,6 @@ import (
 	"vou/pkg/storage"
 
 	"github.com/graphql-go/graphql"
-	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -174,41 +173,4 @@ func (r *UsersResolver) GetAllUsers(params graphql.ResolveParams) (interface{}, 
 	}
 
 	return users, nil
-}
-
-func (r *UsersResolver) Login(params graphql.ResolveParams) (interface{}, error) {
-	username, ok := params.Args["username"].(string)
-	if !ok {
-		return nil, fmt.Errorf("missing username")
-	}
-
-	password, ok := params.Args["password"].(string)
-	if !ok {
-		return nil, fmt.Errorf("missing password")
-	}
-
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-
-	var user coredb.User
-	err := db.GetUsersCollection().FindOne(ctx, bson.M{"user_name": username}).Decode(&user)
-	if err != nil {
-		log.Printf("failed to find user: %v\n", err)
-		return nil, fmt.Errorf("invalid username or password")
-	}
-
-	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password))
-	if err != nil {
-		return nil, fmt.Errorf("invalid username or password")
-	}
-
-	token, err := auth.GenerateToken(user)
-	if err != nil {
-		return nil, fmt.Errorf("failed to generate token: %v", err)
-	}
-
-	return map[string]interface{}{
-		"token": token,
-		"user":  user,
-	}, nil
 }

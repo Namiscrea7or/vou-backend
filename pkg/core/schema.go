@@ -65,7 +65,6 @@ func InitSchema() graphql.Schema {
 		Name: "RootMutation",
 		Fields: graphql.Fields{
 			"registerAccount":                usersMutation.RegisterAccount,
-			"login":                          usersMutation.Login,
 			"createVoucher":                  vouchersMutation.CreateVoucher,
 			"editVoucher":                    vouchersMutation.EditVoucher,
 			"deleteVoucher":                  vouchersMutation.DeleteVoucher,

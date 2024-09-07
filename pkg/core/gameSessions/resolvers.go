@@ -80,7 +80,45 @@ func (r *GameSessionsResolver) GetGameSessionByID(params graphql.ResolveParams) 
 		return nil, err
 	}
 
-	return gameSession, nil
+	if len(gameSession.Rewards) == 0 {
+		return map[string]interface{}{
+			"gameSession": gameSession,
+			"rewards":     []coredb.Reward{},
+		}, nil
+	}
+
+	var rewards []coredb.Reward
+	filter := map[string]interface{}{
+		"_id": map[string]interface{}{
+			"$in": gameSession.Rewards,
+		},
+	}
+
+	cursor, err := db.GetRewardsCollection().Find(ctx, filter)
+	if err != nil {
+		log.Printf("failed to find rewards: %v\n", err)
+		return nil, err
+	}
+	defer cursor.Close(ctx)
+
+	for cursor.Next(ctx) {
+		var reward coredb.Reward
+		if err := cursor.Decode(&reward); err != nil {
+			log.Printf("failed to decode reward: %v\n", err)
+			return nil, err
+		}
+		rewards = append(rewards, reward)
+	}
+
+	if err := cursor.Err(); err != nil {
+		log.Printf("cursor error: %v\n", err)
+		return nil, err
+	}
+
+	return map[string]interface{}{
+		"gameSession": gameSession,
+		"rewards":     rewards,
+	}, nil
 }
 
 func (r *GameSessionsResolver) AddRewardToGameSession(params graphql.ResolveParams) (interface{}, error) {
