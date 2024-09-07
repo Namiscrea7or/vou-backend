@@ -18,7 +18,7 @@ var VoucherType = graphql.NewObject(graphql.ObjectConfig{
 			Type: graphql.String,
 		},
 		"value": &graphql.Field{
-			Type: graphql.Float,
+			Type: graphql.String,
 		},
 		"description": &graphql.Field{
 			Type: graphql.String,

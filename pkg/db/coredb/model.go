@@ -29,7 +29,7 @@ type Voucher struct {
 	Code        string             `json:"code" bson:"code"`
 	BrandId     string             `json:"brandId" bson:"brand_id"`
 	ImageURL    string             `json:"imageURL" bson:"image_url"`
-	Value       float64            `json:"value" bson:"value"`
+	Value       string             `json:"value" bson:"value"`
 	Description string             `json:"description" bson:"description"`
 	ExpiredDate time.Time          `json:"expiredDate" bson:"expired_date"`
 }

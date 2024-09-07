@@ -40,7 +40,7 @@ func (r *VouchersResolver) CreateVoucher(params graphql.ResolveParams) (interfac
 		Code:        params.Args["code"].(string),
 		BrandId:     params.Args["brandId"].(string),
 		ImageURL:    params.Args["imageURL"].(string),
-		Value:       params.Args["value"].(float64),
+		Value:       params.Args["value"].(string),
 		Description: params.Args["description"].(string),
 		ExpiredDate: params.Args["expiredDate"].(time.Time),
 	}
@@ -200,7 +200,7 @@ func (r *VouchersResolver) EditVoucher(params graphql.ResolveParams) (interface{
 	if imageURL, ok := params.Args["imageURL"].(string); ok {
 		update["imageURL"] = imageURL
 	}
-	if value, ok := params.Args["value"].(float64); ok {
+	if value, ok := params.Args["value"].(string); ok {
 		update["value"] = value
 	}
 	if description, ok := params.Args["description"].(string); ok {

@@ -26,7 +26,7 @@ func InitVoucherMutation(r *VouchersResolver) *VouchersMutation {
 					Type: graphql.NewNonNull(graphql.String),
 				},
 				"value": &graphql.ArgumentConfig{
-					Type: graphql.NewNonNull(graphql.Float),
+					Type: graphql.NewNonNull(graphql.String),
 				},
 				"description": &graphql.ArgumentConfig{
 					Type: graphql.NewNonNull(graphql.String),
@@ -54,7 +54,7 @@ func InitVoucherMutation(r *VouchersResolver) *VouchersMutation {
 					Type: graphql.String,
 				},
 				"value": &graphql.ArgumentConfig{
-					Type: graphql.Float,
+					Type: graphql.String,
 				},
 				"description": &graphql.ArgumentConfig{
 					Type: graphql.String,
