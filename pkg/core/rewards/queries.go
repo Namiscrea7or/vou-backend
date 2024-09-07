@@ -5,7 +5,8 @@ import (
 )
 
 type RewardsQuery struct {
-	Reward *graphql.Field
+	Reward  *graphql.Field
+	Rewards *graphql.Field
 }
 
 func InitRewardsQuery(r *RewardsResolver) *RewardsQuery {
@@ -19,6 +20,11 @@ func InitRewardsQuery(r *RewardsResolver) *RewardsQuery {
 				},
 			},
 			Resolve: r.GetRewardByID,
+		},
+		Rewards: &graphql.Field{
+			Type:        graphql.NewList(rewardType),
+			Description: "Get all rewards",
+			Resolve:     r.GetAllRewards,
 		},
 	}
 }

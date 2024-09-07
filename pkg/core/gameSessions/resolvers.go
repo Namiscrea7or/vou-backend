@@ -38,10 +38,12 @@ func (r *GameSessionsResolver) CreateGameSession(params graphql.ResolveParams) (
 	name, _ := params.Args["name"].(string)
 	startTime, _ := params.Args["startTime"].(time.Time)
 	endTime, _ := params.Args["endTime"].(time.Time)
+	img, _ := params.Args["image"].(string)
 
 	gameSession := coredb.GameSession{
 		ID:        primitive.NewObjectID(),
 		Name:      name,
+		ImageURL:  img,
 		StartTime: startTime,
 		EndTime:   endTime,
 		Rewards:   []string{},
@@ -164,17 +166,24 @@ func (r *GameSessionsResolver) EditGameSession(params graphql.ResolveParams) (in
 	name, _ := params.Args["name"].(string)
 	startTime, _ := params.Args["startTime"].(time.Time)
 	endTime, _ := params.Args["endTime"].(time.Time)
+	img, _ := params.Args["image"].(string)
 
 	updateFields := bson.M{}
 	if name != "" {
 		updateFields["name"] = name
 	}
+
 	updateFields["status"] = status
 	if !startTime.IsZero() {
 		updateFields["startTime"] = startTime
 	}
+
 	if !endTime.IsZero() {
 		updateFields["endTime"] = endTime
+	}
+
+	if img != "" {
+		updateFields["imageURL"] = img
 	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)

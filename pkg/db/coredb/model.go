@@ -37,6 +37,7 @@ type Voucher struct {
 type Reward struct {
 	ID          primitive.ObjectID `json:"id" bson:"_id,omitempty"`
 	Name        string             `json:"name" bson:"name"`
+	ImageURL    string             `json:"imageURL" bson:"image_url"`
 	Description string             `json:"description" bson:"description"`
 	Type        string             `json:"type" bson:"type"`
 	Value       string             `json:"value" bson:"value"`
@@ -78,6 +79,7 @@ type Brand struct {
 type GameSession struct {
 	ID        primitive.ObjectID `json:"id" bson:"_id,omitempty"`
 	Name      string             `json:"name" bson:"name"`
+	ImageURL  string             `json:"imageURL" bson:"image_url"`
 	StartTime time.Time          `json:"startTime" bson:"start_time"`
 	EndTime   time.Time          `json:"endTime,omitempty" bson:"end_time,omitempty"`
 	Status    bool               `json:"status" bson:"status"`

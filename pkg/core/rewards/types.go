@@ -11,6 +11,9 @@ var rewardType = graphql.NewObject(graphql.ObjectConfig{
 		"name": &graphql.Field{
 			Type: graphql.String,
 		},
+		"imageURL": &graphql.Field{
+			Type: graphql.String,
+		},
 		"description": &graphql.Field{
 			Type: graphql.String,
 		},

@@ -57,6 +57,7 @@ func InitSchema() graphql.Schema {
 			"getGameSessionByID":      gameSessionQuery.GameSession,
 			"getAllGameSession":       gameSessionQuery.AllGameSessions,
 			"getRewardByID":           rewardQuery.Reward,
+			"getAllRewards":           rewardQuery.Rewards,
 		},
 	})
 
@@ -81,8 +82,9 @@ func InitSchema() graphql.Schema {
 			"editGameSession":                gameSessionMutation.EditGameSession,
 			"deleteGameSession":              gameSessionMutation.DeleteGameSession,
 			"AddRewardToGameSession":         gameSessionMutation.AddRewardToGameSession,
-
-			"createReward": rewardMutation.CreateReward,
+			"createReward":                   rewardMutation.CreateReward,
+			"editReward":                     rewardMutation.EditReward,
+			"deleteReward":                   rewardMutation.DeleteReward,
 		},
 	})
 
