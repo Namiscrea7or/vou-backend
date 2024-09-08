@@ -11,6 +11,9 @@ var gameSessionType = graphql.NewObject(graphql.ObjectConfig{
 		"name": &graphql.Field{
 			Type: graphql.NewNonNull(graphql.String),
 		},
+		"brandId": &graphql.Field{
+			Type: graphql.NewNonNull(graphql.String),
+		},
 		"imageURL": &graphql.Field{
 			Type: graphql.String,
 		},

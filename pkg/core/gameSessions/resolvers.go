@@ -36,6 +36,7 @@ func (r *GameSessionsResolver) CreateGameSession(params graphql.ResolveParams) (
 	}
 
 	name, _ := params.Args["name"].(string)
+	brandId, _ := params.Args["brandId"].(string)
 	startTime, _ := params.Args["startTime"].(time.Time)
 	endTime, _ := params.Args["endTime"].(time.Time)
 	img, _ := params.Args["image"].(string)
@@ -43,6 +44,7 @@ func (r *GameSessionsResolver) CreateGameSession(params graphql.ResolveParams) (
 	gameSession := coredb.GameSession{
 		ID:        primitive.NewObjectID(),
 		Name:      name,
+		BrandId:   brandId,
 		ImageURL:  img,
 		StartTime: startTime,
 		EndTime:   endTime,

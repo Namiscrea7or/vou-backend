@@ -20,6 +20,9 @@ func InitGameSessionsMutation(r *GameSessionsResolver) *GameSessionsMutation {
 				"name": &graphql.ArgumentConfig{
 					Type: graphql.NewNonNull(graphql.String),
 				},
+				"brandId": &graphql.ArgumentConfig{
+					Type: graphql.NewNonNull(graphql.String),
+				},
 				"image": &graphql.ArgumentConfig{
 					Type: graphql.NewNonNull(graphql.String),
 				},
