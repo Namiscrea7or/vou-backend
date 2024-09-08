@@ -2,7 +2,7 @@ package rewards
 
 import "github.com/graphql-go/graphql"
 
-var RewardType = graphql.NewObject(graphql.ObjectConfig{
+var rewardType = graphql.NewObject(graphql.ObjectConfig{
 	Name: "Reward",
 	Fields: graphql.Fields{
 		"id": &graphql.Field{

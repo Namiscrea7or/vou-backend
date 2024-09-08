@@ -1,8 +1,6 @@
 package gameSessions
 
 import (
-	"vou/pkg/core/rewards"
-
 	"github.com/graphql-go/graphql"
 )
 
@@ -14,17 +12,7 @@ type GameSessionsQuery struct {
 func InitGameSessionsQuery(r *GameSessionsResolver) *GameSessionsQuery {
 	return &GameSessionsQuery{
 		GameSession: &graphql.Field{
-			Type: graphql.NewObject(graphql.ObjectConfig{
-				Name: "Game session response",
-				Fields: graphql.Fields{
-					"gameSession": &graphql.Field{
-						Type: gameSessionType,
-					},
-					"rewards": &graphql.Field{
-						Type: rewards.RewardType,
-					},
-				},
-			}),
+			Type:        gameSessionType,
 			Description: "Get a game session by ID",
 			Args: graphql.FieldConfigArgument{
 				"id": &graphql.ArgumentConfig{

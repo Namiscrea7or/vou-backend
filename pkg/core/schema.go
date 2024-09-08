@@ -58,6 +58,7 @@ func InitSchema() graphql.Schema {
 			"getAllGameSession":       gameSessionQuery.AllGameSessions,
 			"getRewardByID":           rewardQuery.Reward,
 			"getAllRewards":           rewardQuery.Rewards,
+			"getRewardsBySessionId":   rewardQuery.GetRewardBySessionID,
 		},
 	})
 

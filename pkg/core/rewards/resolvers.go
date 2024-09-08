@@ -150,3 +150,58 @@ func (r *RewardsResolver) DeleteReward(params graphql.ResolveParams) (interface{
 
 	return true, nil
 }
+
+func (r *RewardsResolver) GetRewardBySessionID(params graphql.ResolveParams) (interface{}, error) {
+	sessionID, err := primitive.ObjectIDFromHex(params.Args["sessionId"].(string))
+	if err != nil {
+		return nil, err
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	var gameSession coredb.GameSession
+	err = db.GetGameSessionsCollection().FindOne(ctx, bson.M{"_id": sessionID}).Decode(&gameSession)
+	if err != nil {
+		log.Printf("failed to find game session: %v\n", err)
+		return nil, err
+	}
+
+	if len(gameSession.Rewards) == 0 {
+		return []coredb.Reward{}, nil
+	}
+
+	rewardIDs := make([]primitive.ObjectID, len(gameSession.Rewards))
+	for i, id := range gameSession.Rewards {
+		objectID, err := primitive.ObjectIDFromHex(id)
+		if err != nil {
+			log.Printf("invalid reward ID: %v\n", err)
+			return nil, err
+		}
+		rewardIDs[i] = objectID
+	}
+
+	cursor, err := db.GetRewardsCollection().Find(ctx, bson.M{"_id": bson.M{"$in": rewardIDs}})
+	if err != nil {
+		log.Printf("failed to fetch rewards: %v\n", err)
+		return nil, err
+	}
+	defer cursor.Close(ctx)
+
+	var rewards []coredb.Reward
+	for cursor.Next(ctx) {
+		var reward coredb.Reward
+		if err = cursor.Decode(&reward); err != nil {
+			log.Printf("failed to decode reward: %v\n", err)
+			return nil, err
+		}
+		rewards = append(rewards, reward)
+	}
+
+	if err = cursor.Err(); err != nil {
+		log.Printf("cursor error: %v\n", err)
+		return nil, err
+	}
+
+	return rewards, nil
+}
