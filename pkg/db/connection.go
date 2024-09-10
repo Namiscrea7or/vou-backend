@@ -11,7 +11,17 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-var db *mongo.Database
+var (
+	db                      *mongo.Database
+	UserCollection          = "users"
+	VoucherCollection       = "vouchers"
+	PackageCollection       = "packages"
+	ExchangeCollection      = "exchanges"
+	BrandCollection         = "brands"
+	RewardsCollection       = "rewards"
+	GameSessionCollection   = "game_sessions"
+	UserGameStateCollection = "user_game_states"
+)
 
 func GetDB() *mongo.Database {
 	if db != nil {
@@ -21,24 +31,49 @@ func GetDB() *mongo.Database {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
 	defer cancel()
 
-	mongoAddress := os.Getenv("MONGO_ADDRESS")
 	mongoDatabase := os.Getenv("MONGO_DATABASE_NAME")
-	mongoUser := os.Getenv("MONGO_USER")
-	mongoPassword := os.Getenv("MONGO_PASSWORD")
-	connectionURI := fmt.Sprintf(
-		"mongodb://%s:%s@%s:27017/%s",
-		mongoUser,
-		mongoPassword,
-		mongoAddress,
-		mongoDatabase,
-	)
+	connectionURI := os.Getenv("MONGO_URI")
 
 	client, err := mongo.Connect(ctx, options.Client().ApplyURI(connectionURI))
 	if err != nil {
 		log.Fatal(err)
+	} else {
+		fmt.Println("connect to db successfully")
 	}
 
 	db = client.Database(mongoDatabase)
 
 	return db
+}
+
+func GetUsersCollection() *mongo.Collection {
+	return GetDB().Collection(UserCollection)
+}
+
+func GetVoucherCollection() *mongo.Collection {
+	return GetDB().Collection(VoucherCollection)
+}
+
+func GetPackageCollection() *mongo.Collection {
+	return GetDB().Collection(PackageCollection)
+}
+
+func GetExchangeCollection() *mongo.Collection {
+	return GetDB().Collection(ExchangeCollection)
+}
+
+func GetBrandCollection() *mongo.Collection {
+	return GetDB().Collection(BrandCollection)
+}
+
+func GetRewardsCollection() *mongo.Collection {
+	return GetDB().Collection(RewardsCollection)
+}
+
+func GetGameSessionsCollection() *mongo.Collection {
+	return GetDB().Collection(GameSessionCollection)
+}
+
+func GetUserGameStatesCollection() *mongo.Collection {
+	return GetDB().Collection(UserGameStateCollection)
 }
