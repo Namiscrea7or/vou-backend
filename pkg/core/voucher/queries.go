@@ -9,6 +9,7 @@ type VouchersQuery struct {
 	VoucherByCode     *graphql.Field
 	Vouchers          *graphql.Field
 	VouchersByBrandId *graphql.Field
+	VouchersByUserID  *graphql.Field
 }
 
 func InitVoucherQuery(r *VouchersResolver) *VouchersQuery {
@@ -38,16 +39,25 @@ func InitVoucherQuery(r *VouchersResolver) *VouchersQuery {
 			Description: "Get all vouchers",
 			Resolve:     r.GetAllVouchers,
 		},
-
 		VouchersByBrandId: &graphql.Field{
 			Type:        graphql.NewList(VoucherType),
-			Description: "Get all vouchers",
+			Description: "Get all vouchers by brand ID",
 			Args: graphql.FieldConfigArgument{
 				"brandId": &graphql.ArgumentConfig{
 					Type: graphql.NewNonNull(graphql.String),
 				},
 			},
-			Resolve: r.GetAllVouchers,
+			Resolve: r.GetVouchersByBrandId,
+		},
+		VouchersByUserID: &graphql.Field{
+			Type:        graphql.NewList(VoucherType),
+			Description: "Get all vouchers by user ID",
+			Args: graphql.FieldConfigArgument{
+				"userId": &graphql.ArgumentConfig{
+					Type: graphql.NewNonNull(graphql.String),
+				},
+			},
+			Resolve: r.GetVouchersByUserID,
 		},
 	}
 }
