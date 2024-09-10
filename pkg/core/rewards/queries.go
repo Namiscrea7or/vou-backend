@@ -8,6 +8,7 @@ type RewardsQuery struct {
 	Reward               *graphql.Field
 	Rewards              *graphql.Field
 	GetRewardBySessionID *graphql.Field
+	GetRewardByUserID    *graphql.Field
 }
 
 func InitRewardsQuery(r *RewardsResolver) *RewardsQuery {
@@ -29,13 +30,23 @@ func InitRewardsQuery(r *RewardsResolver) *RewardsQuery {
 		},
 		GetRewardBySessionID: &graphql.Field{
 			Type:        graphql.NewList(rewardType),
-			Description: "Get detail rewards by session ID",
+			Description: "Get rewards by session ID",
 			Args: graphql.FieldConfigArgument{
 				"sessionId": &graphql.ArgumentConfig{
 					Type: graphql.NewNonNull(graphql.String),
 				},
 			},
 			Resolve: r.GetRewardBySessionID,
+		},
+		GetRewardByUserID: &graphql.Field{
+			Type:        graphql.NewList(rewardType),
+			Description: "Get rewards by user ID",
+			Args: graphql.FieldConfigArgument{
+				"userId": &graphql.ArgumentConfig{
+					Type: graphql.NewNonNull(graphql.String),
+				},
+			},
+			Resolve: r.GetRewardByUserID,
 		},
 	}
 }

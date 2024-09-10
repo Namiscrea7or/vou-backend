@@ -279,3 +279,79 @@ func (r *VouchersResolver) DeleteVoucher(params graphql.ResolveParams) (interfac
 
 	return true, nil
 }
+
+func (r *VouchersResolver) GetVouchersByUserID(params graphql.ResolveParams) (interface{}, error) {
+	userID, err := primitive.ObjectIDFromHex(params.Args["userId"].(string))
+	if err != nil {
+		return nil, fmt.Errorf("invalid user ID: %v", err)
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	var packages []coredb.Package
+	cursor, err := db.GetPackageCollection().Find(ctx, bson.M{"userId": userID})
+	if err != nil {
+		log.Printf("failed to fetch packages: %v", err)
+		return nil, fmt.Errorf("failed to fetch packages: %v", err)
+	}
+	defer cursor.Close(ctx)
+
+	for cursor.Next(ctx) {
+		var pkg coredb.Package
+		if err = cursor.Decode(&pkg); err != nil {
+			log.Printf("failed to decode package: %v", err)
+			return nil, fmt.Errorf("failed to decode package: %v", err)
+		}
+		packages = append(packages, pkg)
+	}
+
+	if err = cursor.Err(); err != nil {
+		log.Printf("cursor error: %v", err)
+		return nil, fmt.Errorf("cursor error: %v", err)
+	}
+
+	if len(packages) == 0 {
+		return []coredb.Voucher{}, nil
+	}
+
+	var voucherIDs []primitive.ObjectID
+	for _, pkg := range packages {
+		for _, voucherIDStr := range pkg.Vouchers {
+			objectID, err := primitive.ObjectIDFromHex(voucherIDStr)
+			if err != nil {
+				log.Printf("invalid voucher ID: %v", err)
+				return nil, fmt.Errorf("invalid voucher ID: %v", err)
+			}
+			voucherIDs = append(voucherIDs, objectID)
+		}
+	}
+
+	if len(voucherIDs) == 0 {
+		return []coredb.Voucher{}, nil
+	}
+
+	cursor, err = db.GetVoucherCollection().Find(ctx, bson.M{"_id": bson.M{"$in": voucherIDs}})
+	if err != nil {
+		log.Printf("failed to fetch vouchers: %v", err)
+		return nil, fmt.Errorf("failed to fetch vouchers: %v", err)
+	}
+	defer cursor.Close(ctx)
+
+	var vouchers []coredb.Voucher
+	for cursor.Next(ctx) {
+		var voucher coredb.Voucher
+		if err = cursor.Decode(&voucher); err != nil {
+			log.Printf("failed to decode voucher: %v", err)
+			return nil, fmt.Errorf("failed to decode voucher: %v", err)
+		}
+		vouchers = append(vouchers, voucher)
+	}
+
+	if err = cursor.Err(); err != nil {
+		log.Printf("cursor error: %v", err)
+		return nil, fmt.Errorf("cursor error: %v", err)
+	}
+
+	return vouchers, nil
+}

@@ -205,3 +205,79 @@ func (r *RewardsResolver) GetRewardBySessionID(params graphql.ResolveParams) (in
 
 	return rewards, nil
 }
+
+func (r *RewardsResolver) GetRewardByUserID(params graphql.ResolveParams) (interface{}, error) {
+	userID, err := primitive.ObjectIDFromHex(params.Args["userId"].(string))
+	if err != nil {
+		return nil, err
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	var packages []coredb.Package
+	cursor, err := db.GetPackageCollection().Find(ctx, bson.M{"userId": userID})
+	if err != nil {
+		log.Printf("failed to fetch packages: %v\n", err)
+		return nil, err
+	}
+	defer cursor.Close(ctx)
+
+	for cursor.Next(ctx) {
+		var pkg coredb.Package
+		if err = cursor.Decode(&pkg); err != nil {
+			log.Printf("failed to decode package: %v\n", err)
+			return nil, err
+		}
+		packages = append(packages, pkg)
+	}
+
+	if err = cursor.Err(); err != nil {
+		log.Printf("cursor error: %v\n", err)
+		return nil, err
+	}
+
+	if len(packages) == 0 {
+		return []coredb.Reward{}, nil
+	}
+
+	var rewardIDs []primitive.ObjectID
+	for _, pkg := range packages {
+		for _, rewardIDStr := range pkg.Rewards {
+			objectID, err := primitive.ObjectIDFromHex(rewardIDStr)
+			if err != nil {
+				log.Printf("invalid reward ID: %v\n", err)
+				return nil, err
+			}
+			rewardIDs = append(rewardIDs, objectID)
+		}
+	}
+
+	if len(rewardIDs) == 0 {
+		return []coredb.Reward{}, nil
+	}
+
+	cursor, err = db.GetRewardsCollection().Find(ctx, bson.M{"_id": bson.M{"$in": rewardIDs}})
+	if err != nil {
+		log.Printf("failed to fetch rewards: %v\n", err)
+		return nil, err
+	}
+	defer cursor.Close(ctx)
+
+	var rewards []coredb.Reward
+	for cursor.Next(ctx) {
+		var reward coredb.Reward
+		if err = cursor.Decode(&reward); err != nil {
+			log.Printf("failed to decode reward: %v\n", err)
+			return nil, err
+		}
+		rewards = append(rewards, reward)
+	}
+
+	if err = cursor.Err(); err != nil {
+		log.Printf("cursor error: %v\n", err)
+		return nil, err
+	}
+
+	return rewards, nil
+}
