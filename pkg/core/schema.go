@@ -48,6 +48,7 @@ func InitSchema() graphql.Schema {
 		Fields: graphql.Fields{
 			"user":                       usersQuery.User,
 			"getAllUsers":                usersQuery.GetAllUsers,
+			"getUserById":                usersQuery.GetUserByID,
 			"voucherById":                vouchersQuery.Voucher,
 			"voucherByCode":              vouchersQuery.VoucherByCode,
 			"getVouchersByUserId":        vouchersQuery.VouchersByUserID,
