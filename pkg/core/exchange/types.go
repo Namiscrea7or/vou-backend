@@ -7,12 +7,10 @@ import (
 var exchangeType = graphql.NewObject(graphql.ObjectConfig{
 	Name: "Exchange",
 	Fields: graphql.Fields{
-		"id":             &graphql.Field{Type: graphql.ID},
-		"firstUserId":    &graphql.Field{Type: graphql.String},
-		"firstRewardId":  &graphql.Field{Type: graphql.String},
-		"secondUserId":   &graphql.Field{Type: graphql.String},
-		"secondRewardId": &graphql.Field{Type: graphql.String},
-		"createdAt":      &graphql.Field{Type: graphql.DateTime},
-		"completed":      &graphql.Field{Type: graphql.Boolean},
+		"id":            &graphql.Field{Type: graphql.ID},
+		"gameSessionId": &graphql.Field{Type: graphql.String},
+		"rewardIds":     &graphql.Field{Type: graphql.NewList(graphql.String)},
+		"voucherId":     &graphql.Field{Type: graphql.String},
+		"createdAt":     &graphql.Field{Type: graphql.DateTime},
 	},
 })

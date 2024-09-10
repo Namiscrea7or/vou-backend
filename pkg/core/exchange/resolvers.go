@@ -2,11 +2,9 @@ package exchange
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"time"
 
-	"vou/pkg/auth"
 	"vou/pkg/db"
 	"vou/pkg/db/coredb"
 
@@ -27,25 +25,17 @@ func NewExchangesResolver() *ExchangesResolver {
 	}
 }
 
-func (r *ExchangesResolver) CreateExchangeRequest(params graphql.ResolveParams) (interface{}, error) {
-	user, ok := params.Context.Value(auth.UserKey).(coredb.User)
-	if !ok {
-		return nil, fmt.Errorf("user not found")
-	}
-
-	if user.Role != "user" {
-		return nil, fmt.Errorf("Permission denied")
-	}
-
-	firstUserID := params.Args["firstUserId"].(string)
-	firstRewardId := params.Args["firstRewardId"].(string)
+func (r *ExchangesResolver) CreateExchange(params graphql.ResolveParams) (interface{}, error) {
+	rewardIds := castToStringSlice(params.Args["rewardIds"].([]interface{}))
+	voucherId := params.Args["voucherId"].(string)
+	gameSessionId := params.Args["gameSessionId"].(string)
 
 	exchange := coredb.Exchange{
-		ID:           primitive.NewObjectID(),
-		FirstUserID:  firstUserID,
-		FirstRwardID: firstRewardId,
-		CreatedAt:    time.Now(),
-		Completed:    false,
+		ID:            primitive.NewObjectID(),
+		RewardIDs:     rewardIds,
+		VoucherID:     voucherId,
+		GameSessionID: gameSessionId,
+		CreatedAt:     time.Now(),
 	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
@@ -53,87 +43,39 @@ func (r *ExchangesResolver) CreateExchangeRequest(params graphql.ResolveParams) 
 
 	_, err := db.GetExchangeCollection().InsertOne(ctx, exchange)
 	if err != nil {
-		log.Printf("failed to create exchange request: %v\n", err)
-		return false, err
+		log.Printf("failed to create exchange: %v\n", err)
+		return nil, err
 	}
 
-	return true, nil
+	return exchange, nil
 }
 
-func (r *ExchangesResolver) AddRewardToExchange(params graphql.ResolveParams) (interface{}, error) {
-	user, ok := params.Context.Value(auth.UserKey).(coredb.User)
-	if !ok {
-		return nil, fmt.Errorf("user not found")
-	}
-
-	if user.Role != "user" {
-		return nil, fmt.Errorf("Permission denied")
-	}
-
-	exchangeID := params.Args["exchangeId"].(string)
-	secondUserID := params.Args["secondUserId"].(string)
-	secondRwardId := params.Args["secondRwardId"].(string)
-
-	exchID, err := primitive.ObjectIDFromHex(exchangeID)
+func (r *ExchangesResolver) GetExchangeByID(params graphql.ResolveParams) (interface{}, error) {
+	id, err := primitive.ObjectIDFromHex(params.Args["id"].(string))
 	if err != nil {
-		return false, err
-	}
-
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-
-	filter := bson.M{"_id": exchID, "completed": false}
-	update := bson.M{
-		"$set": bson.M{"secondUserId": secondUserID, "secondRewardId": secondRwardId},
-	}
-
-	_, err = db.GetExchangeCollection().UpdateOne(ctx, filter, update)
-	if err != nil {
-		log.Printf("failed to add voucher to exchange: %v\n", err)
-		return false, err
-	}
-
-	return true, nil
-}
-
-func (r *ExchangesResolver) FinalizeExchange(params graphql.ResolveParams) (interface{}, error) {
-	exchangeID := params.Args["exchangeId"].(string)
-
-	exchID, err := primitive.ObjectIDFromHex(exchangeID)
-	if err != nil {
-		return false, err
+		return nil, err
 	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
 	var exchange coredb.Exchange
-	err = db.GetExchangeCollection().FindOne(ctx, bson.M{"_id": exchID}).Decode(&exchange)
+	err = db.GetExchangeCollection().FindOne(ctx, bson.M{"_id": id}).Decode(&exchange)
 	if err != nil {
 		log.Printf("failed to find exchange: %v\n", err)
-		return false, err
+		return nil, err
 	}
 
-	if err := r.swapRewards(exchange); err != nil {
-		return false, err
-	}
-
-	filter := bson.M{"_id": exchID}
-	update := bson.M{"$set": bson.M{"completed": true}}
-	_, err = db.GetExchangeCollection().UpdateOne(ctx, filter, update)
-	if err != nil {
-		return false, err
-	}
-
-	return true, nil
+	return exchange, nil
 }
 
-func (r *ExchangesResolver) GetExchangeRequests(params graphql.ResolveParams) (interface{}, error) {
+func (r *ExchangesResolver) GetAllExchanges(params graphql.ResolveParams) (interface{}, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	cursor, err := db.GetExchangeCollection().Find(ctx, bson.M{"completed": false})
+	cursor, err := db.GetExchangeCollection().Find(ctx, bson.M{})
 	if err != nil {
+		log.Printf("failed to fetch exchanges: %v\n", err)
 		return nil, err
 	}
 	defer cursor.Close(ctx)
@@ -141,32 +83,161 @@ func (r *ExchangesResolver) GetExchangeRequests(params graphql.ResolveParams) (i
 	var exchanges []coredb.Exchange
 	for cursor.Next(ctx) {
 		var exchange coredb.Exchange
-		if err := cursor.Decode(&exchange); err != nil {
+		if err = cursor.Decode(&exchange); err != nil {
+			log.Printf("failed to decode exchange: %v\n", err)
 			return nil, err
 		}
 		exchanges = append(exchanges, exchange)
 	}
 
+	if err = cursor.Err(); err != nil {
+		log.Printf("cursor error: %v\n", err)
+		return nil, err
+	}
+
 	return exchanges, nil
 }
 
-func (r *ExchangesResolver) swapRewards(exchange coredb.Exchange) error {
-	firstUserId, _ := primitive.ObjectIDFromHex(exchange.FirstUserID)
-	secondUserId, _ := primitive.ObjectIDFromHex(exchange.SecondUserID)
-
-	if err := r.PackagesRepo.RemoveVoucherFromPackageByCode(firstUserId, exchange.FirstRwardID); err != nil {
-		return err
-	}
-	if err := r.PackagesRepo.AddVoucherToPackageByCode(firstUserId, exchange.SecondRewardID); err != nil {
-		return err
+func (r *ExchangesResolver) UpdateExchange(params graphql.ResolveParams) (interface{}, error) {
+	id, err := primitive.ObjectIDFromHex(params.Args["id"].(string))
+	if err != nil {
+		return nil, err
 	}
 
-	if err := r.PackagesRepo.RemoveVoucherFromPackageByCode(secondUserId, exchange.SecondRewardID); err != nil {
-		return err
-	}
-	if err := r.PackagesRepo.AddVoucherToPackageByCode(secondUserId, exchange.FirstRwardID); err != nil {
-		return err
+	update := bson.M{
+		"$set": bson.M{
+			"reward_ids":     castToStringSlice(params.Args["rewardIds"].([]interface{})),
+			"voucher_id":     params.Args["voucherId"].(string),
+			"gameSession_id": params.Args["gameSessionId"].(string),
+		},
 	}
 
-	return nil
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	_, err = db.GetExchangeCollection().UpdateOne(ctx, bson.M{"_id": id}, update)
+	if err != nil {
+		log.Printf("failed to update exchange: %v\n", err)
+		return false, err
+	}
+
+	return true, nil
+}
+
+func (r *ExchangesResolver) DeleteExchange(params graphql.ResolveParams) (interface{}, error) {
+	id, err := primitive.ObjectIDFromHex(params.Args["id"].(string))
+	if err != nil {
+		return nil, err
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	_, err = db.GetExchangeCollection().DeleteOne(ctx, bson.M{"_id": id})
+	if err != nil {
+		log.Printf("failed to delete exchange: %v\n", err)
+		return false, err
+	}
+
+	return true, nil
+}
+
+func (r *ExchangesResolver) GetAllExchangesByGameSessionID(params graphql.ResolveParams) (interface{}, error) {
+	sessionID, err := primitive.ObjectIDFromHex(params.Args["sessionId"].(string))
+	if err != nil {
+		return nil, err
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	cursor, err := db.GetExchangeCollection().Find(ctx, bson.M{"game_session_id": sessionID.Hex()})
+	if err != nil {
+		log.Printf("failed to fetch exchanges: %v\n", err)
+		return nil, err
+	}
+	defer cursor.Close(ctx)
+
+	var exchanges []coredb.Exchange
+	for cursor.Next(ctx) {
+		var exchange coredb.Exchange
+		if err = cursor.Decode(&exchange); err != nil {
+			log.Printf("failed to decode exchange: %v\n", err)
+			return nil, err
+		}
+		exchanges = append(exchanges, exchange)
+	}
+
+	if err = cursor.Err(); err != nil {
+		log.Printf("cursor error: %v\n", err)
+		return nil, err
+	}
+
+	return exchanges, nil
+}
+
+func castToStringSlice(i interface{}) []string {
+	var result []string
+	if slice, ok := i.([]interface{}); ok {
+		for _, item := range slice {
+			if str, ok := item.(string); ok {
+				result = append(result, str)
+			}
+		}
+	}
+	return result
+}
+
+func (r *ExchangesResolver) AskForExchange(params graphql.ResolveParams) (interface{}, error) {
+	userId := params.Args["userId"].(string)
+	rewardIds := castToStringSlice(params.Args["rewardIds"].([]interface{}))
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	var exchangeRequests []coredb.Exchange
+	cursor, err := db.GetExchangeCollection().Find(ctx, bson.M{"reward_ids": bson.M{"$in": rewardIds}})
+	if err != nil {
+		log.Printf("failed to fetch exchanges: %v\n", err)
+		return nil, err
+	}
+	defer cursor.Close(ctx)
+
+	for cursor.Next(ctx) {
+		var exchange coredb.Exchange
+		if err = cursor.Decode(&exchange); err != nil {
+			log.Printf("failed to decode exchange: %v\n", err)
+			return nil, err
+		}
+		exchangeRequests = append(exchangeRequests, exchange)
+	}
+
+	if err = cursor.Err(); err != nil {
+		log.Printf("cursor error: %v\n", err)
+		return nil, err
+	}
+
+	for _, exchange := range exchangeRequests {
+		_, err := db.GetPackageCollection().UpdateOne(
+			ctx,
+			bson.M{"user_id": userId},
+			bson.M{"$pull": bson.M{"rewards": bson.M{"$in": exchange.RewardIDs}}},
+		)
+		if err != nil {
+			log.Printf("failed to remove rewards from user package: %v\n", err)
+			return nil, err
+		}
+
+		_, err = db.GetPackageCollection().UpdateOne(
+			ctx,
+			bson.M{"user_id": userId},
+			bson.M{"$push": bson.M{"vouchers": exchange.VoucherID}},
+		)
+		if err != nil {
+			log.Printf("failed to add voucher to user package: %v\n", err)
+			return nil, err
+		}
+	}
+
+	return true, nil
 }

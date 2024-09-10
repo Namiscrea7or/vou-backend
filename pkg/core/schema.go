@@ -1,4 +1,3 @@
-// core/schema.go
 package core
 
 import (
@@ -28,6 +27,7 @@ func InitSchema() graphql.Schema {
 		packagesMutation = packages.InitPackageMutation(packagesResolver)
 
 		exchangesResolver = exchange.NewExchangesResolver()
+		exchangesQuery    = exchange.InitExchangesQuery(exchangesResolver)
 		exchangesMutation = exchange.InitExchangesMutation(exchangesResolver)
 
 		brandResolver = brand.NewBrandResolver()
@@ -46,20 +46,22 @@ func InitSchema() graphql.Schema {
 	rootQuery := graphql.NewObject(graphql.ObjectConfig{
 		Name: "RootQuery",
 		Fields: graphql.Fields{
-			"user":                    usersQuery.User,
-			"getAllUsers":             usersQuery.GetAllUsers,
-			"voucherById":             vouchersQuery.Voucher,
-			"voucherByCode":           vouchersQuery.VoucherByCode,
-			"getAllVouchers":          vouchersQuery.Vouchers,
-			"getAllVouchersByBrandId": vouchersQuery.VouchersByBrandId,
-			"package":                 packagesQuery.Package,
-			"brandById":               brandQuery.BrandRequest,
-			"getAllBrand":             brandQuery.AllBrandRequest,
-			"getGameSessionByID":      gameSessionQuery.GameSession,
-			"getAllGameSession":       gameSessionQuery.AllGameSessions,
-			"getRewardByID":           rewardQuery.Reward,
-			"getAllRewards":           rewardQuery.Rewards,
-			"getRewardsBySessionId":   rewardQuery.GetRewardBySessionID,
+			"user":                       usersQuery.User,
+			"getAllUsers":                usersQuery.GetAllUsers,
+			"voucherById":                vouchersQuery.Voucher,
+			"voucherByCode":              vouchersQuery.VoucherByCode,
+			"getAllVouchers":             vouchersQuery.Vouchers,
+			"getAllVouchersByBrandId":    vouchersQuery.VouchersByBrandId,
+			"package":                    packagesQuery.Package,
+			"brandById":                  brandQuery.BrandRequest,
+			"getAllBrand":                brandQuery.AllBrandRequest,
+			"getGameSessionByID":         gameSessionQuery.GameSession,
+			"getAllGameSession":          gameSessionQuery.AllGameSessions,
+			"getRewardByID":              rewardQuery.Reward,
+			"getAllRewards":              rewardQuery.Rewards,
+			"getRewardsBySessionId":      rewardQuery.GetRewardBySessionID,
+			"getAllExchanges":            exchangesQuery.GetAllExchanges,
+			"getAllExchangesBySessionID": exchangesQuery.GetAllExchangesBySessionID,
 		},
 	})
 
@@ -75,14 +77,15 @@ func InitSchema() graphql.Schema {
 			"removeVoucherFromPackageById":   packagesMutation.RemoveRewardFromPackageById,
 			"addVoucherToPackageByCode":      packagesMutation.AddVoucherToPackageByCode,
 			"removeVoucherFromPackageByCode": packagesMutation.RemoveVoucherFromPackageByCode,
-			"createExchangeRequest":          exchangesMutation.CreateExchangeRequest,
-			"addRewardToExchange":            exchangesMutation.AddRewardToExchange,
-			"finalizeExchange":               exchangesMutation.FinalizeExchange,
+			"createExchangeRequest":          exchangesMutation.CreateExchange,
+			"updateExchangeRequest":          exchangesMutation.UpdateExchange,
+			"askForExchange":                 exchangesMutation.AskForExchange,
+			"deleteExchangeRequest":          exchangesMutation.DeleteExchange,
 			"createBrand":                    brandMutation.CreateBrand,
 			"createGameSession":              gameSessionMutation.CreateGameSession,
 			"editGameSession":                gameSessionMutation.EditGameSession,
 			"deleteGameSession":              gameSessionMutation.DeleteGameSession,
-			"AddRewardToGameSession":         gameSessionMutation.AddRewardToGameSession,
+			"addRewardToGameSession":         gameSessionMutation.AddRewardToGameSession,
 			"createReward":                   rewardMutation.CreateReward,
 			"editReward":                     rewardMutation.EditReward,
 			"deleteReward":                   rewardMutation.DeleteReward,

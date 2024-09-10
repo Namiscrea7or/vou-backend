@@ -5,51 +5,54 @@ import (
 )
 
 type ExchangesMutation struct {
-	CreateExchangeRequest *graphql.Field
-	AddRewardToExchange   *graphql.Field
-	FinalizeExchange      *graphql.Field
+	CreateExchange *graphql.Field
+	UpdateExchange *graphql.Field
+	AskForExchange *graphql.Field
+	DeleteExchange *graphql.Field
 }
 
 func InitExchangesMutation(r *ExchangesResolver) *ExchangesMutation {
 	return &ExchangesMutation{
-		CreateExchangeRequest: &graphql.Field{
-			Type:        graphql.Boolean,
-			Description: "Create a new exchange request",
+		CreateExchange: &graphql.Field{
+			Type:        exchangeType,
+			Description: "Create a new exchange",
 			Args: graphql.FieldConfigArgument{
-				"firstUserId": &graphql.ArgumentConfig{
-					Type: graphql.NewNonNull(graphql.String),
-				},
-				"firstRewardId": &graphql.ArgumentConfig{
-					Type: graphql.NewNonNull(graphql.String),
-				},
+				"rewardIds":     &graphql.ArgumentConfig{Type: graphql.NewNonNull(graphql.NewList(graphql.String))},
+				"voucherId":     &graphql.ArgumentConfig{Type: graphql.NewNonNull(graphql.String)},
+				"gameSessionId": &graphql.ArgumentConfig{Type: graphql.NewNonNull(graphql.String)},
 			},
-			Resolve: r.CreateExchangeRequest,
+			Resolve: r.CreateExchange,
 		},
-		AddRewardToExchange: &graphql.Field{
-			Type:        graphql.Boolean,
-			Description: "Add a voucher to an existing exchange request",
+		UpdateExchange: &graphql.Field{
+			Type:        exchangeType,
+			Description: "Update an existing exchange",
 			Args: graphql.FieldConfigArgument{
-				"exchangeId": &graphql.ArgumentConfig{
+				"id":            &graphql.ArgumentConfig{Type: graphql.NewNonNull(graphql.ID)},
+				"rewardIds":     &graphql.ArgumentConfig{Type: graphql.NewList(graphql.String)},
+				"voucherId":     &graphql.ArgumentConfig{Type: graphql.String},
+				"completed":     &graphql.ArgumentConfig{Type: graphql.Boolean},
+				"gameSessionId": &graphql.ArgumentConfig{Type: graphql.String},
+			},
+			Resolve: r.UpdateExchange,
+		},
+		AskForExchange: &graphql.Field{
+			Type:        graphql.Boolean,
+			Description: "Ask for an exchange by providing user ID and reward IDs",
+			Args: graphql.FieldConfigArgument{
+				"userId":    &graphql.ArgumentConfig{Type: graphql.NewNonNull(graphql.String)},
+				"rewardIds": &graphql.ArgumentConfig{Type: graphql.NewList(graphql.String)},
+			},
+			Resolve: r.AskForExchange,
+		},
+		DeleteExchange: &graphql.Field{
+			Type:        graphql.Boolean,
+			Description: "Delete an exchange by ID",
+			Args: graphql.FieldConfigArgument{
+				"id": &graphql.ArgumentConfig{
 					Type: graphql.NewNonNull(graphql.ID),
 				},
-				"secondUserId": &graphql.ArgumentConfig{
-					Type: graphql.NewNonNull(graphql.String),
-				},
-				"secondRewardId": &graphql.ArgumentConfig{
-					Type: graphql.NewNonNull(graphql.String),
-				},
 			},
-			Resolve: r.AddRewardToExchange,
-		},
-		FinalizeExchange: &graphql.Field{
-			Type:        graphql.Boolean,
-			Description: "Finalize an exchange request",
-			Args: graphql.FieldConfigArgument{
-				"exchangeId": &graphql.ArgumentConfig{
-					Type: graphql.NewNonNull(graphql.ID),
-				},
-			},
-			Resolve: r.FinalizeExchange,
+			Resolve: r.DeleteExchange,
 		},
 	}
 }

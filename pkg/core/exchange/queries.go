@@ -5,15 +5,26 @@ import (
 )
 
 type ExchangesQuery struct {
-	ExchangeRequests *graphql.Field
+	GetAllExchanges            *graphql.Field
+	GetAllExchangesBySessionID *graphql.Field
 }
 
 func InitExchangesQuery(r *ExchangesResolver) *ExchangesQuery {
 	return &ExchangesQuery{
-		ExchangeRequests: &graphql.Field{
+		GetAllExchanges: &graphql.Field{
 			Type:        graphql.NewList(exchangeType),
-			Description: "Get all exchange requests",
-			Resolve:     r.GetExchangeRequests,
+			Description: "Get all exchanges",
+			Resolve:     r.GetAllExchanges,
+		},
+		GetAllExchangesBySessionID: &graphql.Field{
+			Type:        graphql.NewList(exchangeType),
+			Description: "Get all exchanges by game session ID",
+			Args: graphql.FieldConfigArgument{
+				"sessionId": &graphql.ArgumentConfig{
+					Type: graphql.NewNonNull(graphql.ID),
+				},
+			},
+			Resolve: r.GetAllExchangesByGameSessionID,
 		},
 	}
 }
