@@ -13,7 +13,7 @@ func InitBrandQuery(r *BrandResolver) *BranchQuery {
 	return &BranchQuery{
 		BrandRequest: &graphql.Field{
 			Type:        brandType,
-			Description: "Get branch requests by id",
+			Description: "Get brand requests by id",
 			Args: graphql.FieldConfigArgument{
 				"id": &graphql.ArgumentConfig{
 					Type: graphql.NewNonNull(graphql.String),
@@ -23,7 +23,7 @@ func InitBrandQuery(r *BrandResolver) *BranchQuery {
 		},
 		AllBrandRequest: &graphql.Field{
 			Type:        graphql.NewList(brandType),
-			Description: "Get all branch",
+			Description: "Get all brand",
 			Resolve:     r.GetAllBrands,
 		},
 	}

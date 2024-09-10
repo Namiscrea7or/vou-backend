@@ -174,3 +174,29 @@ func (r *UsersResolver) GetAllUsers(params graphql.ResolveParams) (interface{}, 
 
 	return users, nil
 }
+
+func (r *UsersResolver) GetUserByID(params graphql.ResolveParams) (interface{}, error) {
+	id, ok := params.Args["id"].(string)
+	if !ok {
+		return nil, fmt.Errorf("Missing ID")
+	}
+
+	objectID, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		return nil, fmt.Errorf("Invalid ID format")
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	var user coredb.User
+	err = db.GetUsersCollection().FindOne(ctx, map[string]interface{}{
+		"_id": objectID,
+	}).Decode(&user)
+	if err != nil {
+		log.Printf("Failed to find user: %v\n", err)
+		return nil, err
+	}
+
+	return user, nil
+}

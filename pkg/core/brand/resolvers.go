@@ -89,15 +89,6 @@ func (r *BrandResolver) CreateBrand(params graphql.ResolveParams) (interface{}, 
 }
 
 func (r *BrandResolver) GetBrandByID(params graphql.ResolveParams) (interface{}, error) {
-	user, ok := params.Context.Value(auth.UserKey).(coredb.User)
-	if !ok {
-		return nil, fmt.Errorf("user not found")
-	}
-
-	if user.Role != "brand" {
-		return nil, fmt.Errorf("Permission denied")
-	}
-
 	id, ok := params.Args["id"].(string)
 	if !ok {
 		return nil, nil
