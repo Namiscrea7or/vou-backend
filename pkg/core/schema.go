@@ -47,6 +47,7 @@ func InitSchema() graphql.Schema {
 		Name: "RootQuery",
 		Fields: graphql.Fields{
 			"user":                    usersQuery.User,
+			"getAllUsers":             usersQuery.GetAllUsers,
 			"voucherById":             vouchersQuery.Voucher,
 			"voucherByCode":           vouchersQuery.VoucherByCode,
 			"getAllVouchers":          vouchersQuery.Vouchers,
