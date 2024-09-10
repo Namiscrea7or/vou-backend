@@ -79,6 +79,8 @@ func InitSchema() graphql.Schema {
 			"removeVoucherFromPackageById":   packagesMutation.RemoveRewardFromPackageById,
 			"addVoucherToPackageByCode":      packagesMutation.AddVoucherToPackageByCode,
 			"removeVoucherFromPackageByCode": packagesMutation.RemoveVoucherFromPackageByCode,
+			"addRewardToPackageById":         packagesMutation.AddRewardToPackageById,
+			"removeRewardFromPackageById":    packagesMutation.RemoveRewardFromPackageById,
 			"createExchangeRequest":          exchangesMutation.CreateExchange,
 			"updateExchangeRequest":          exchangesMutation.UpdateExchange,
 			"askForExchange":                 exchangesMutation.AskForExchange,
