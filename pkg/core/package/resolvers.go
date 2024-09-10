@@ -13,6 +13,7 @@ import (
 	"github.com/graphql-go/graphql"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/mongo"
 )
 
 type PackagesResolver struct {
@@ -218,4 +219,31 @@ func (r *PackagesResolver) RemoveVoucherFromPackageByCode(params graphql.Resolve
 	}
 
 	return true, nil
+}
+
+func (r *PackagesResolver) GetPackageByUserID(params graphql.ResolveParams) (interface{}, error) {
+	userIDStr, ok := params.Args["userId"].(string)
+	if !ok {
+		return nil, fmt.Errorf("invalid user ID")
+	}
+
+	userID, err := primitive.ObjectIDFromHex(userIDStr)
+	if err != nil {
+		return nil, fmt.Errorf("invalid user ID: %v", err)
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	var pkg coredb.Package
+	err = db.GetPackageCollection().FindOne(ctx, bson.M{"userId": userID}).Decode(&pkg)
+	if err != nil {
+		if err == mongo.ErrNoDocuments {
+			return nil, fmt.Errorf("no package found for user ID: %v", userID)
+		}
+		log.Printf("failed to fetch package: %v", err)
+		return nil, fmt.Errorf("failed to fetch package: %v", err)
+	}
+
+	return pkg, nil
 }

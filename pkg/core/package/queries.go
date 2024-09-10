@@ -5,12 +5,13 @@ import (
 )
 
 type PackagesQuery struct {
-	Package *graphql.Field
+	PackageByID     *graphql.Field
+	PackageByUserID *graphql.Field
 }
 
 func InitPackageQuery(r *PackagesResolver) *PackagesQuery {
 	return &PackagesQuery{
-		Package: &graphql.Field{
+		PackageByID: &graphql.Field{
 			Type:        packageType,
 			Description: "Get a package by ID",
 			Args: graphql.FieldConfigArgument{
@@ -19,6 +20,16 @@ func InitPackageQuery(r *PackagesResolver) *PackagesQuery {
 				},
 			},
 			Resolve: r.GetPackageByID,
+		},
+		PackageByUserID: &graphql.Field{
+			Type:        packageType,
+			Description: "Get a package by user ID",
+			Args: graphql.FieldConfigArgument{
+				"userId": &graphql.ArgumentConfig{
+					Type: graphql.NewNonNull(graphql.String),
+				},
+			},
+			Resolve: r.GetPackageByUserID,
 		},
 	}
 }

@@ -53,7 +53,7 @@ func InitSchema() graphql.Schema {
 			"getVouchersByUserId":        vouchersQuery.VouchersByUserID,
 			"getAllVouchers":             vouchersQuery.Vouchers,
 			"getAllVouchersByBrandId":    vouchersQuery.VouchersByBrandId,
-			"package":                    packagesQuery.Package,
+			"getPackageByUserId":         packagesQuery.PackageByUserID,
 			"brandById":                  brandQuery.BrandRequest,
 			"getAllBrand":                brandQuery.AllBrandRequest,
 			"getGameSessionByID":         gameSessionQuery.GameSession,
