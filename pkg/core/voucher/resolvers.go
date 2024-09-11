@@ -286,36 +286,27 @@ func (r *VouchersResolver) GetVouchersByUserID(params graphql.ResolveParams) (in
 		return nil, fmt.Errorf("failed to fetch package: %v", err)
 	}
 
-	var voucherIDs []primitive.ObjectID
+	log.Printf("pkg.Vouchers: %v", pkg.Vouchers)
+
+	var vouchers []coredb.Voucher
+
 	for _, voucherIDStr := range pkg.Vouchers {
 		objectID, err := primitive.ObjectIDFromHex(voucherIDStr)
 		if err != nil {
 			return nil, fmt.Errorf("invalid voucher ID: %v", err)
 		}
-		voucherIDs = append(voucherIDs, objectID)
-	}
 
-	if len(voucherIDs) == 0 {
-		return []coredb.Voucher{}, nil
-	}
-
-	cursor, err := db.GetVoucherCollection().Find(ctx, bson.M{"_id": bson.M{"$in": voucherIDs}})
-	if err != nil {
-		return nil, fmt.Errorf("failed to fetch vouchers: %v", err)
-	}
-	defer cursor.Close(ctx)
-
-	var vouchers []coredb.Voucher
-	for cursor.Next(ctx) {
 		var voucher coredb.Voucher
-		if err = cursor.Decode(&voucher); err != nil {
-			return nil, fmt.Errorf("failed to decode voucher: %v", err)
-		}
-		vouchers = append(vouchers, voucher)
-	}
+		err = db.GetVoucherCollection().FindOne(ctx, bson.M{"_id": objectID}).Decode(&voucher)
+		if err != nil {
+			if err == mongo.ErrNoDocuments {
+				continue
+			}
 
-	if err = cursor.Err(); err != nil {
-		return nil, fmt.Errorf("cursor error: %v", err)
+			return nil, fmt.Errorf("failed to fetch voucher: %v", err)
+		}
+
+		vouchers = append(vouchers, voucher)
 	}
 
 	return vouchers, nil

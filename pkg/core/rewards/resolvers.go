@@ -227,41 +227,31 @@ func (r *RewardsResolver) GetRewardByUserID(params graphql.ResolveParams) (inter
 		return nil, err
 	}
 
-	var rewardIDs []primitive.ObjectID
+	log.Printf("pkg.Rewards: %v", pkg.Rewards)
+
+	var rewards []coredb.Reward
+
 	for _, rewardIDStr := range pkg.Rewards {
 		objectID, err := primitive.ObjectIDFromHex(rewardIDStr)
 		if err != nil {
 			log.Printf("invalid reward ID: %v\n", err)
 			return nil, err
 		}
-		rewardIDs = append(rewardIDs, objectID)
-	}
 
-	if len(rewardIDs) == 0 {
-		return []coredb.Reward{}, nil
-	}
-
-	cursor, err := db.GetRewardsCollection().Find(ctx, bson.M{"_id": bson.M{"$in": rewardIDs}})
-	if err != nil {
-		log.Printf("failed to fetch rewards: %v\n", err)
-		return nil, err
-	}
-	defer cursor.Close(ctx)
-
-	var rewards []coredb.Reward
-	for cursor.Next(ctx) {
 		var reward coredb.Reward
-		if err = cursor.Decode(&reward); err != nil {
-			log.Printf("failed to decode reward: %v\n", err)
+		err = db.GetRewardsCollection().FindOne(ctx, bson.M{"_id": objectID}).Decode(&reward)
+		if err != nil {
+			if err == mongo.ErrNoDocuments {
+				continue
+			}
+			log.Printf("failed to fetch reward: %v\n", err)
 			return nil, err
 		}
+
 		rewards = append(rewards, reward)
 	}
 
-	if err = cursor.Err(); err != nil {
-		log.Printf("cursor error: %v\n", err)
-		return nil, err
-	}
+	log.Printf("Fetched rewards: %v", rewards)
 
 	return rewards, nil
 }
