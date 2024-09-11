@@ -116,16 +116,11 @@ func (r *VouchersResolver) GetVouchersByBrandId(params graphql.ResolveParams) (i
 		return nil, fmt.Errorf("missing brand ID")
 	}
 
-	brandObjectID, err := primitive.ObjectIDFromHex(brandId)
-	if err != nil {
-		return nil, fmt.Errorf("invalid brand ID")
-	}
-
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
 	var vouchers []coredb.Voucher
-	cursor, err := db.GetVoucherCollection().Find(ctx, bson.M{"brandId": brandObjectID})
+	cursor, err := db.GetVoucherCollection().Find(ctx, bson.M{"brandId": brandId})
 	if err != nil {
 		return nil, fmt.Errorf("failed to find vouchers: %v", err)
 	}
