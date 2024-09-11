@@ -2,6 +2,7 @@ package rewards
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"time"
 
@@ -11,6 +12,7 @@ import (
 	"github.com/graphql-go/graphql"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/mongo"
 )
 
 type RewardsResolver struct {
@@ -207,57 +209,39 @@ func (r *RewardsResolver) GetRewardBySessionID(params graphql.ResolveParams) (in
 }
 
 func (r *RewardsResolver) GetRewardByUserID(params graphql.ResolveParams) (interface{}, error) {
-	userID, err := primitive.ObjectIDFromHex(params.Args["userId"].(string))
-	if err != nil {
-		return nil, err
+	userID, ok := params.Args["userId"].(string)
+	if !ok {
+		return nil, fmt.Errorf("invalid user ID")
 	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	var packages []coredb.Package
-	cursor, err := db.GetPackageCollection().Find(ctx, bson.M{"userId": userID})
+	var pkg coredb.Package
+	err := db.GetPackageCollection().FindOne(ctx, bson.M{"user_id": userID}).Decode(&pkg)
 	if err != nil {
-		log.Printf("failed to fetch packages: %v\n", err)
-		return nil, err
-	}
-	defer cursor.Close(ctx)
-
-	for cursor.Next(ctx) {
-		var pkg coredb.Package
-		if err = cursor.Decode(&pkg); err != nil {
-			log.Printf("failed to decode package: %v\n", err)
-			return nil, err
+		if err == mongo.ErrNoDocuments {
+			return []coredb.Reward{}, nil
 		}
-		packages = append(packages, pkg)
-	}
-
-	if err = cursor.Err(); err != nil {
-		log.Printf("cursor error: %v\n", err)
+		log.Printf("failed to fetch package: %v\n", err)
 		return nil, err
-	}
-
-	if len(packages) == 0 {
-		return []coredb.Reward{}, nil
 	}
 
 	var rewardIDs []primitive.ObjectID
-	for _, pkg := range packages {
-		for _, rewardIDStr := range pkg.Rewards {
-			objectID, err := primitive.ObjectIDFromHex(rewardIDStr)
-			if err != nil {
-				log.Printf("invalid reward ID: %v\n", err)
-				return nil, err
-			}
-			rewardIDs = append(rewardIDs, objectID)
+	for _, rewardIDStr := range pkg.Rewards {
+		objectID, err := primitive.ObjectIDFromHex(rewardIDStr)
+		if err != nil {
+			log.Printf("invalid reward ID: %v\n", err)
+			return nil, err
 		}
+		rewardIDs = append(rewardIDs, objectID)
 	}
 
 	if len(rewardIDs) == 0 {
 		return []coredb.Reward{}, nil
 	}
 
-	cursor, err = db.GetRewardsCollection().Find(ctx, bson.M{"_id": bson.M{"$in": rewardIDs}})
+	cursor, err := db.GetRewardsCollection().Find(ctx, bson.M{"_id": bson.M{"$in": rewardIDs}})
 	if err != nil {
 		log.Printf("failed to fetch rewards: %v\n", err)
 		return nil, err
