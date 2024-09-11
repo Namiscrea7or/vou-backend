@@ -255,7 +255,7 @@ func (r *VouchersResolver) DeleteVoucher(params graphql.ResolveParams) (interfac
 }
 
 func (r *VouchersResolver) GetVouchersByUserID(params graphql.ResolveParams) (interface{}, error) {
-	userIDStr, ok := params.Args["userId"].(string)
+	userID, ok := params.Args["userId"].(string)
 	if !ok {
 		return nil, fmt.Errorf("invalid user ID")
 	}
@@ -264,12 +264,13 @@ func (r *VouchersResolver) GetVouchersByUserID(params graphql.ResolveParams) (in
 	defer cancel()
 
 	var pkg coredb.Package
-	err := db.GetPackageCollection().FindOne(ctx, bson.M{"user_id": userIDStr}).Decode(&pkg)
+	err := db.GetPackageCollection().FindOne(ctx, bson.M{"user_id": userID}).Decode(&pkg)
 	if err != nil {
 		if err == mongo.ErrNoDocuments {
 			return []coredb.Voucher{}, nil
 		}
-		return nil, fmt.Errorf("failed to fetch package: %v", err)
+		log.Printf("failed to fetch package: %v\n", err)
+		return nil, err
 	}
 
 	log.Printf("pkg.Vouchers: %v", pkg.Vouchers)
@@ -279,7 +280,8 @@ func (r *VouchersResolver) GetVouchersByUserID(params graphql.ResolveParams) (in
 	for _, voucherIDStr := range pkg.Vouchers {
 		objectID, err := primitive.ObjectIDFromHex(voucherIDStr)
 		if err != nil {
-			return nil, fmt.Errorf("invalid voucher ID: %v", err)
+			log.Printf("invalid voucher ID: %v\n", err)
+			return nil, err
 		}
 
 		var voucher coredb.Voucher
@@ -288,12 +290,14 @@ func (r *VouchersResolver) GetVouchersByUserID(params graphql.ResolveParams) (in
 			if err == mongo.ErrNoDocuments {
 				continue
 			}
-
-			return nil, fmt.Errorf("failed to fetch voucher: %v", err)
+			log.Printf("failed to fetch voucher: %v\n", err)
+			return nil, err
 		}
 
 		vouchers = append(vouchers, voucher)
 	}
+
+	log.Printf("Fetched vouchers: %v", vouchers)
 
 	return vouchers, nil
 }

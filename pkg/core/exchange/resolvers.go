@@ -2,6 +2,7 @@ package exchange
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"time"
 
@@ -11,6 +12,7 @@ import (
 	"github.com/graphql-go/graphql"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/mongo"
 )
 
 type ExchangesResolver struct {
@@ -187,6 +189,7 @@ func castToStringSlice(i interface{}) []string {
 	}
 	return result
 }
+
 func (r *ExchangesResolver) AskForExchange(params graphql.ResolveParams) (interface{}, error) {
 	userId := params.Args["userId"].(string)
 	rewardIds := castToStringSlice(params.Args["rewardIds"].([]interface{}))
@@ -195,52 +198,39 @@ func (r *ExchangesResolver) AskForExchange(params graphql.ResolveParams) (interf
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	var exchangeRequests []coredb.Exchange
-	cursor, err := db.GetExchangeCollection().Find(ctx, bson.M{
+	var exchange coredb.Exchange
+	err := db.GetExchangeCollection().FindOne(ctx, bson.M{
 		"reward_ids": bson.M{"$in": rewardIds},
 		"voucher_id": voucherId,
-	})
+	}).Decode(&exchange)
+
 	if err != nil {
-		log.Printf("failed to fetch exchanges: %v\n", err)
-		return nil, err
-	}
-	defer cursor.Close(ctx)
-
-	for cursor.Next(ctx) {
-		var exchange coredb.Exchange
-		if err = cursor.Decode(&exchange); err != nil {
-			log.Printf("failed to decode exchange: %v\n", err)
-			return nil, err
+		if err == mongo.ErrNoDocuments {
+			log.Printf("no exchange found for rewards %v and voucher %s\n", rewardIds, voucherId)
+			return nil, fmt.Errorf("no matching exchange found")
 		}
-		exchangeRequests = append(exchangeRequests, exchange)
-	}
-
-	if err = cursor.Err(); err != nil {
-		log.Printf("cursor error: %v\n", err)
+		log.Printf("failed to fetch exchange: %v\n", err)
 		return nil, err
 	}
 
-	for _, exchange := range exchangeRequests {
-		_, err := db.GetPackageCollection().UpdateOne(
-			ctx,
-			bson.M{"user_id": userId},
-			bson.M{"$pull": bson.M{"rewards": bson.M{"$in": exchange.RewardIDs}}},
-		)
-		if err != nil {
-			log.Printf("failed to remove rewards from user package: %v\n", err)
-			return nil, err
-		}
+	_, err = db.GetPackageCollection().UpdateOne(
+		ctx,
+		bson.M{"user_id": userId},
+		bson.M{"$pull": bson.M{"rewards": bson.M{"$in": exchange.RewardIDs}}},
+	)
+	if err != nil {
+		log.Printf("failed to remove rewards from user package: %v\n", err)
+		return nil, err
+	}
 
-		// Add the voucher to the user's package
-		_, err = db.GetPackageCollection().UpdateOne(
-			ctx,
-			bson.M{"user_id": userId},
-			bson.M{"$push": bson.M{"vouchers": exchange.VoucherID}},
-		)
-		if err != nil {
-			log.Printf("failed to add voucher to user package: %v\n", err)
-			return nil, err
-		}
+	_, err = db.GetPackageCollection().UpdateOne(
+		ctx,
+		bson.M{"user_id": userId},
+		bson.M{"$push": bson.M{"vouchers": exchange.VoucherID}},
+	)
+	if err != nil {
+		log.Printf("failed to add voucher to user package: %v\n", err)
+		return nil, err
 	}
 
 	return true, nil
