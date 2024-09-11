@@ -37,10 +37,11 @@ func InitExchangesMutation(r *ExchangesResolver) *ExchangesMutation {
 		},
 		AskForExchange: &graphql.Field{
 			Type:        graphql.Boolean,
-			Description: "Ask for an exchange by providing user ID and reward IDs",
+			Description: "Ask for an exchange by providing user ID, reward IDs, and voucher ID",
 			Args: graphql.FieldConfigArgument{
 				"userId":    &graphql.ArgumentConfig{Type: graphql.NewNonNull(graphql.String)},
-				"rewardIds": &graphql.ArgumentConfig{Type: graphql.NewList(graphql.String)},
+				"rewardIds": &graphql.ArgumentConfig{Type: graphql.NewNonNull(graphql.NewList(graphql.String))},
+				"voucherId": &graphql.ArgumentConfig{Type: graphql.NewNonNull(graphql.String)},
 			},
 			Resolve: r.AskForExchange,
 		},
