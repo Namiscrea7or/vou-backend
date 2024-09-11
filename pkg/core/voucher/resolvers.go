@@ -120,7 +120,7 @@ func (r *VouchersResolver) GetVouchersByBrandId(params graphql.ResolveParams) (i
 	defer cancel()
 
 	var vouchers []coredb.Voucher
-	cursor, err := db.GetVoucherCollection().Find(ctx, bson.M{"brandId": brandId})
+	cursor, err := db.GetVoucherCollection().Find(ctx, bson.M{"brand_id": brandId})
 	if err != nil {
 		return nil, fmt.Errorf("failed to find vouchers: %v", err)
 	}
