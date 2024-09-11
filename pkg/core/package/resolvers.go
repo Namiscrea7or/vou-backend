@@ -31,6 +31,7 @@ func (r *PackagesResolver) CreatePackage(params graphql.ResolveParams) (interfac
 		ID:            primitive.NewObjectID(),
 		UserID:        params.Args["userId"].(string),
 		Vouchers:      []string{},
+		Rewards:       []string{},
 		AllowExchange: params.Args["allow_exchange"].(bool),
 	}
 
