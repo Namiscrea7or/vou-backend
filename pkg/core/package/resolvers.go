@@ -223,21 +223,16 @@ func (r *PackagesResolver) RemoveVoucherFromPackageByCode(params graphql.Resolve
 }
 
 func (r *PackagesResolver) GetPackageByUserID(params graphql.ResolveParams) (interface{}, error) {
-	userIDStr, ok := params.Args["userId"].(string)
+	userID, ok := params.Args["userId"].(string)
 	if !ok {
 		return nil, fmt.Errorf("invalid user ID")
-	}
-
-	userID, err := primitive.ObjectIDFromHex(userIDStr)
-	if err != nil {
-		return nil, fmt.Errorf("invalid user ID: %v", err)
 	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
 	var pkg coredb.Package
-	err = db.GetPackageCollection().FindOne(ctx, bson.M{"userId": userID}).Decode(&pkg)
+	err := db.GetPackageCollection().FindOne(ctx, bson.M{"user_id": userID}).Decode(&pkg)
 	if err != nil {
 		if err == mongo.ErrNoDocuments {
 			return nil, fmt.Errorf("no package found for user ID: %v", userID)
