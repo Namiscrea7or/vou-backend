@@ -119,15 +119,6 @@ func (r *VouchersResolver) GetAllVouchers(params graphql.ResolveParams) (interfa
 }
 
 func (r *VouchersResolver) GetVouchersByBrandId(params graphql.ResolveParams) (interface{}, error) {
-	user, ok := params.Context.Value(auth.UserKey).(coredb.User)
-	if !ok {
-		return nil, fmt.Errorf("user not found")
-	}
-
-	if user.Role != "brand" {
-		return nil, fmt.Errorf("Permission denied")
-	}
-
 	brandId, ok := params.Args["brandId"].(string)
 	if !ok {
 		return nil, fmt.Errorf("missing brand ID")
@@ -136,10 +127,6 @@ func (r *VouchersResolver) GetVouchersByBrandId(params graphql.ResolveParams) (i
 	brandObjectID, err := primitive.ObjectIDFromHex(brandId)
 	if err != nil {
 		return nil, fmt.Errorf("invalid brand ID")
-	}
-
-	if user.ID != brandObjectID {
-		return nil, fmt.Errorf("Brand ID does not match")
 	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
