@@ -222,7 +222,7 @@ func (r *GameSessionsResolver) GetGameSessionByBrandID(params graphql.ResolvePar
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	cursor, err := db.GetGameSessionsCollection().Find(ctx, bson.M{"brandId": brandId})
+	cursor, err := db.GetGameSessionsCollection().Find(ctx, bson.M{"brand_id": brandId})
 	if err != nil {
 		log.Printf("failed to find game sessions for brandId %s: %v\n", brandId, err)
 		return nil, err
