@@ -32,7 +32,7 @@ func (r *PackagesResolver) CreatePackage(params graphql.ResolveParams) (interfac
 		UserID:        params.Args["userId"].(string),
 		Vouchers:      []string{},
 		Rewards:       []string{},
-		AllowExchange: params.Args["allow_exchange"].(bool),
+		AllowExchange: params.Args["allowExchange"].(bool),
 	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
