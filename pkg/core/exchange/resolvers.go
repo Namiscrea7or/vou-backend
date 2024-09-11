@@ -213,23 +213,38 @@ func (r *ExchangesResolver) AskForExchange(params graphql.ResolveParams) (interf
 		return nil, err
 	}
 
-	_, err = db.GetPackageCollection().UpdateOne(
-		ctx,
-		bson.M{"user_id": userId},
-		bson.M{"$pull": bson.M{"rewards": bson.M{"$in": exchange.RewardIDs}}},
-	)
+	var pkg coredb.Package
+	err = db.GetPackageCollection().FindOne(ctx, bson.M{"user_id": userId}).Decode(&pkg)
 	if err != nil {
-		log.Printf("failed to remove rewards from user package: %v\n", err)
+		log.Printf("failed to fetch package: %v\n", err)
 		return nil, err
 	}
+
+	for _, rewardID := range exchange.RewardIDs {
+		found := false
+		for i, r := range pkg.Rewards {
+			if r == rewardID {
+				pkg.Rewards = append(pkg.Rewards[:i], pkg.Rewards[i+1:]...)
+				found = true
+				break
+			}
+		}
+
+		if !found {
+			log.Printf("reward %s not found in user's package\n", rewardID)
+			return nil, fmt.Errorf("reward %s not found in user's package", rewardID)
+		}
+	}
+
+	pkg.Vouchers = append(pkg.Vouchers, exchange.VoucherID)
 
 	_, err = db.GetPackageCollection().UpdateOne(
 		ctx,
 		bson.M{"user_id": userId},
-		bson.M{"$push": bson.M{"vouchers": exchange.VoucherID}},
+		bson.M{"$set": bson.M{"rewards": pkg.Rewards, "vouchers": pkg.Vouchers}},
 	)
 	if err != nil {
-		log.Printf("failed to add voucher to user package: %v\n", err)
+		log.Printf("failed to update user's package: %v\n", err)
 		return nil, err
 	}
 
