@@ -83,15 +83,6 @@ func (r *PackagesResolver) GetPackageByID(params graphql.ResolveParams) (interfa
 }
 
 func (r *PackagesResolver) AddRewardToPackageById(params graphql.ResolveParams) (interface{}, error) {
-	user, ok := params.Context.Value(auth.UserKey).(coredb.User)
-	if !ok {
-		return nil, fmt.Errorf("user not found")
-	}
-
-	if user.Role != "user" {
-		return nil, fmt.Errorf("Permission denied")
-	}
-
 	packageID, _ := params.Args["packageID"].(string)
 	rewardID, _ := params.Args["rewardID"].(string)
 
@@ -152,15 +143,6 @@ func (r *PackagesResolver) RemoveRewardFromPackageById(params graphql.ResolvePar
 }
 
 func (r *PackagesResolver) AddVoucherToPackageByCode(params graphql.ResolveParams) (interface{}, error) {
-	user, ok := params.Context.Value(auth.UserKey).(coredb.User)
-	if !ok {
-		return nil, fmt.Errorf("user not found")
-	}
-
-	if user.Role != "user" {
-		return nil, fmt.Errorf("Permission denied")
-	}
-
 	packageID, _ := params.Args["packageID"].(string)
 	voucherCode, _ := params.Args["voucherCode"].(string)
 
