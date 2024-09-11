@@ -26,15 +26,6 @@ func NewGameSessionsResolver() *GameSessionsResolver {
 }
 
 func (r *GameSessionsResolver) CreateGameSession(params graphql.ResolveParams) (interface{}, error) {
-	user, ok := params.Context.Value(auth.UserKey).(coredb.User)
-	if !ok {
-		return nil, fmt.Errorf("user not found")
-	}
-
-	if user.Role != "admin" {
-		return nil, fmt.Errorf("Permission denied")
-	}
-
 	name, _ := params.Args["name"].(string)
 	brandId, _ := params.Args["brandId"].(string)
 	startTime, _ := params.Args["startTime"].(time.Time)
