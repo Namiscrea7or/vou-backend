@@ -5,8 +5,9 @@ import (
 )
 
 type GameSessionsQuery struct {
-	GameSession     *graphql.Field
-	AllGameSessions *graphql.Field
+	GameSession          *graphql.Field
+	AllGameSessions      *graphql.Field
+	GameSessionByBrandId *graphql.Field
 }
 
 func InitGameSessionsQuery(r *GameSessionsResolver) *GameSessionsQuery {
@@ -25,6 +26,16 @@ func InitGameSessionsQuery(r *GameSessionsResolver) *GameSessionsQuery {
 			Type:        graphql.NewList(gameSessionType),
 			Description: "Get all game sessions",
 			Resolve:     r.GetAllGameSessions,
+		},
+		GameSessionByBrandId: &graphql.Field{
+			Type:        graphql.NewList(gameSessionType),
+			Description: "Get game sessions by Brand ID",
+			Args: graphql.FieldConfigArgument{
+				"brandId": &graphql.ArgumentConfig{
+					Type: graphql.NewNonNull(graphql.String),
+				},
+			},
+			Resolve: r.GetGameSessionByBrandID,
 		},
 	}
 }

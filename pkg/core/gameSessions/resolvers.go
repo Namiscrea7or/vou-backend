@@ -221,3 +221,28 @@ func (r *GameSessionsResolver) DeleteGameSession(params graphql.ResolveParams) (
 
 	return true, nil
 }
+
+func (r *GameSessionsResolver) GetGameSessionByBrandID(params graphql.ResolveParams) (interface{}, error) {
+	brandId, ok := params.Args["brandId"].(string)
+	if !ok {
+		return nil, fmt.Errorf("brandId not provided")
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	cursor, err := db.GetGameSessionsCollection().Find(ctx, bson.M{"brandId": brandId})
+	if err != nil {
+		log.Printf("failed to find game sessions for brandId %s: %v\n", brandId, err)
+		return nil, err
+	}
+	defer cursor.Close(ctx)
+
+	var gameSessions []coredb.GameSession
+	if err = cursor.All(ctx, &gameSessions); err != nil {
+		log.Printf("failed to decode game sessions: %v\n", err)
+		return nil, err
+	}
+
+	return gameSessions, nil
+}
