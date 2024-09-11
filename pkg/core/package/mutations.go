@@ -51,7 +51,7 @@ func InitPackageMutation(r *PackagesResolver) *PackagesMutation {
 					Type: graphql.NewNonNull(graphql.ID),
 				},
 			},
-			Resolve: r.RemoveRewardFromPackageById,
+			Resolve: r.RemoveOneRewardFromPackageById,
 		},
 		AddVoucherToPackageByID: &graphql.Field{
 			Type:        graphql.Boolean,
