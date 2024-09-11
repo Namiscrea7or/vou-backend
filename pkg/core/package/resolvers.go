@@ -101,7 +101,7 @@ func (r *PackagesResolver) AddRewardToPackageById(params graphql.ResolveParams) 
 
 	filter := bson.M{"_id": pkgID}
 	update := bson.M{
-		"$addToSet": bson.M{"rewards": rwID},
+		"$push": bson.M{"rewards": rwID},
 	}
 
 	_, err = r.PackagesRepo.Collection.UpdateOne(ctx, filter, update)
@@ -112,7 +112,7 @@ func (r *PackagesResolver) AddRewardToPackageById(params graphql.ResolveParams) 
 	return true, nil
 }
 
-func (r *PackagesResolver) RemoveRewardFromPackageById(params graphql.ResolveParams) (interface{}, error) {
+func (r *PackagesResolver) RemoveOneRewardFromPackageById(params graphql.ResolveParams) (interface{}, error) {
 	packageID, _ := params.Args["packageID"].(string)
 	rewardID, _ := params.Args["rewardID"].(string)
 
@@ -129,10 +129,27 @@ func (r *PackagesResolver) RemoveRewardFromPackageById(params graphql.ResolvePar
 		return false, err
 	}
 
-	filter := bson.M{"_id": pkgID}
-	update := bson.M{
-		"$pull": bson.M{"rewards": rwID},
+	var pkg coredb.Package
+	err = db.GetPackageCollection().FindOne(ctx, bson.M{"_id": pkgID}).Decode(&pkg)
+	if err != nil {
+		return false, err
 	}
+
+	found := false
+	for i, reward := range pkg.Rewards {
+		if reward == rwID.Hex() {
+			pkg.Rewards = append(pkg.Rewards[:i], pkg.Rewards[i+1:]...)
+			found = true
+			break
+		}
+	}
+
+	if !found {
+		return false, fmt.Errorf("reward not found in package")
+	}
+
+	filter := bson.M{"_id": pkgID}
+	update := bson.M{"$set": bson.M{"rewards": pkg.Rewards}}
 
 	_, err = r.PackagesRepo.Collection.UpdateOne(ctx, filter, update)
 	if err != nil {
@@ -142,63 +159,84 @@ func (r *PackagesResolver) RemoveRewardFromPackageById(params graphql.ResolvePar
 	return true, nil
 }
 
-func (r *PackagesResolver) AddVoucherToPackageByCode(params graphql.ResolveParams) (interface{}, error) {
+func (r *PackagesResolver) AddVoucherToPackageByID(params graphql.ResolveParams) (interface{}, error) {
 	packageID, _ := params.Args["packageID"].(string)
-	voucherCode, _ := params.Args["voucherCode"].(string)
+	voucherID, _ := params.Args["voucherID"].(string)
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
 	pkgID, err := primitive.ObjectIDFromHex(packageID)
 	if err != nil {
-		return false, err
+		return false, fmt.Errorf("invalid package ID: %v", err)
+	}
+
+	vID, err := primitive.ObjectIDFromHex(voucherID)
+	if err != nil {
+		return false, fmt.Errorf("invalid voucher ID: %v", err)
 	}
 
 	var voucher coredb.Voucher
-	err = db.GetVoucherCollection().FindOne(ctx, bson.M{"code": voucherCode}).Decode(&voucher)
+	err = db.GetVoucherCollection().FindOne(ctx, bson.M{"_id": vID}).Decode(&voucher)
 	if err != nil {
-		return false, err
+		return false, fmt.Errorf("voucher not found: %v", err)
 	}
 
 	filter := bson.M{"_id": pkgID}
 	update := bson.M{
-		"$addToSet": bson.M{"vouchers": voucher.ID.Hex()},
+		"$push": bson.M{"vouchers": vID.Hex()},
 	}
 
 	_, err = r.PackagesRepo.Collection.UpdateOne(ctx, filter, update)
 	if err != nil {
-		return false, err
+		return false, fmt.Errorf("failed to update package: %v", err)
 	}
 
 	return true, nil
 }
 
-func (r *PackagesResolver) RemoveVoucherFromPackageByCode(params graphql.ResolveParams) (interface{}, error) {
+func (r *PackagesResolver) RemoveOneVoucherFromPackageByID(params graphql.ResolveParams) (interface{}, error) {
 	packageID, _ := params.Args["packageID"].(string)
-	voucherCode, _ := params.Args["voucherCode"].(string)
+	voucherID, _ := params.Args["voucherID"].(string)
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
 	pkgID, err := primitive.ObjectIDFromHex(packageID)
 	if err != nil {
-		return false, err
+		return false, fmt.Errorf("invalid package ID: %v", err)
 	}
 
-	var voucher coredb.Voucher
-	err = db.GetVoucherCollection().FindOne(ctx, bson.M{"code": voucherCode}).Decode(&voucher)
+	vID, err := primitive.ObjectIDFromHex(voucherID)
 	if err != nil {
-		return false, err
+		return false, fmt.Errorf("invalid voucher ID: %v", err)
+	}
+
+	var pkg coredb.Package
+	err = db.GetPackageCollection().FindOne(ctx, bson.M{"_id": pkgID}).Decode(&pkg)
+	if err != nil {
+		return false, fmt.Errorf("failed to find package: %v", err)
+	}
+
+	found := false
+	for i, voucher := range pkg.Vouchers {
+		if voucher == vID.Hex() {
+			pkg.Vouchers = append(pkg.Vouchers[:i], pkg.Vouchers[i+1:]...)
+			found = true
+			break
+		}
+	}
+
+	if !found {
+		return false, fmt.Errorf("voucher not found in package")
 	}
 
 	filter := bson.M{"_id": pkgID}
-	update := bson.M{
-		"$pull": bson.M{"vouchers": voucher.ID.Hex()},
-	}
+	update := bson.M{"$set": bson.M{"vouchers": pkg.Vouchers}}
 
 	_, err = r.PackagesRepo.Collection.UpdateOne(ctx, filter, update)
 	if err != nil {
-		return false, err
+		return false, fmt.Errorf("failed to update package: %v", err)
 	}
 
 	return true, nil
